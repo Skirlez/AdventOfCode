@@ -8,6 +8,6 @@ int isNumber(string str);
 int stringToInt(string str);
 string readInput(int day, char* argv[]);
 
-typedef void (*SolutionFunction)(string str);
+typedef int (*SolutionFunction)(const string& str);
 long long timeFunction(SolutionFunction func, string input, const int iterations);
 void timeFunctionAndPrint(SolutionFunction func, string input, const int iterations);
