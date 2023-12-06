@@ -92,12 +92,12 @@ int main(int argc, char* argv[]) {
 	string input = readInput(1, argv);
 
 	cout << "Part 1: " << solution_1(input) << '\n';
-	timeFunctionAndPrint(solution_1, input, 10000);
+	timeFunctionAndPrint(solution_1, input, 100000);
 	
 	cout << '\n';
 
 	cout << "Part 2: " << solution_2(input) << '\n';
-	timeFunctionAndPrint(solution_2, input, 10000);
+	timeFunctionAndPrint(solution_2, input, 100000);
 	return 0;
 }
 
