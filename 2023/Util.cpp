@@ -45,24 +45,40 @@ int stringToInt(string str) {
 	return num;
 }
 
-long long timeFunction(SolutionFunction func, string input, const int iterations) {
+unsigned long long timeFunction(SolutionFunction func, string input, const int iterations) {
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int m = 0; m < iterations; m++)
 		func(input);
 	auto end = std::chrono::high_resolution_clock::now();
-	long long diff = chrono::duration_cast<chrono::microseconds>(end - start).count() / iterations;
+	unsigned long long diff = chrono::duration_cast<chrono::nanoseconds>(end - start).count() / iterations;
 	return diff;
+}
+
+string nanoToMicro(unsigned long long num) {
+    string resultString = ((ostringstream()) << num).str();
+	int pos = resultString.length() - 3;
+	while (pos < 0) {
+		resultString.insert(0, "0");
+		pos++;
+	}
+	if (pos == 0) {
+		resultString.insert(0, "0");
+		pos++;
+	}
+    resultString.insert(pos, ".");
+    resultString = resultString.substr(0, 6);
+    return resultString;
 }
 
 void timeFunctionAndPrint(SolutionFunction func, string input, const int iterations) {
 	cout << "Timing function (running " << iterations << " iterations...)" << '\n'; 
-	long long executionTime = timeFunction(func, input, iterations);
-	cout << "The function took " << executionTime << " microseconds to run on average from " 
+	unsigned long long executionTime = timeFunction(func, input, iterations);
+	cout << "The function took " << nanoToMicro(executionTime) << " microseconds to run on average from " 
 		<< iterations << " iterations." << '\n';
 
 	if (executionTime != 0) {
-		#define blinkTime 100000
-		long long runs = blinkTime / executionTime;
+		#define blinkTime 100000000
+		unsigned long long runs = blinkTime / executionTime;
 		cout << "The smallest accepted average duration for blinking is 100 milliseconds." 
 			<< " The function would run " << runs << " times in one blink." << '\n';
 	}

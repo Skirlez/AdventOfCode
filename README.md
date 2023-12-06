@@ -4,6 +4,6 @@ As my timezone does not allow me to participate in the leaderboards, I have take
 
 Each file expects to be given a directory which holds "n.txt", the input file for day n, as a console argument.
 
-Each file will print the answer and the benchmark for both part 1 and 2. Benchmarking works by checking how long the function takes to run some amount of times, divided by that amount (usually 10,000).
+Each file will print the answer and the benchmark for both part 1 and 2. Timing the solutions works by checking how long the function takes to run some amount of times, divided by that amount (usually 10,000).
 
-To run: I usually build with GCC, compiling the .cpp of the day with Util.cpp included. When benchmarking, I use -Ofast as a compiler argument.
+To run: I usually build with GCC, compiling the .cpp of the day with Util.cpp included. When timing the solutions, I use -Ofast as a compiler argument.

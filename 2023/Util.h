@@ -9,5 +9,5 @@ int stringToInt(string str);
 string readInput(int day, char* argv[]);
 
 typedef int (*SolutionFunction)(const string& str);
-long long timeFunction(SolutionFunction func, string input, const int iterations);
+unsigned long long timeFunction(SolutionFunction func, string input, const int iterations);
 void timeFunctionAndPrint(SolutionFunction func, string input, const int iterations);

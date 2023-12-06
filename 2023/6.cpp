@@ -4,8 +4,6 @@
 
 using namespace std;
 
-#define numtype double
-
 inline int readNumberBackwardsUntilSpace(const string& str, int i) {
 	int multiplier = 1;
 	int num = 0;
@@ -70,16 +68,18 @@ int solution_2(const string& input) {
 	int i = lineLength - 1;
 
 	// we are doing the quadratic formula !!!!
-	const int a = 1;
-	int64_t b = -readNumberBackwardsUntilEnd(input, i - 1, 7);
-	int64_t c = readNumberBackwardsUntilEnd(input, i - 1 + lineLength, 7 + lineLength + 1);
-	double discriminant = sqrt(b*b - 4*a*c);
- 	int64_t x1 = (-(double)b - discriminant) / 2*a;
+	#define start 7
 
+	const int a = 1;
+	int64_t b = -readNumberBackwardsUntilEnd(input, i - 1, start);
+	int64_t c = readNumberBackwardsUntilEnd(input, i - 1 + lineLength, start + lineLength + 1);
+	double discriminant = sqrt(b*b - 4*a*c);
+
+ 	int64_t x1 = (-(double)b - discriminant) / 2*a;
 	int64_t midpoint = -b/2*a;
 
-	
 	int64_t result = (midpoint - x1) * 2;
+
 	// if the midpoint is a whole number, we've counted it as two points in the previous calculation, so we must subtract 1
 	if (-b % 2 == 0)
 		result--; 
@@ -89,12 +89,12 @@ int solution_2(const string& input) {
 int main(int argc, char* argv[]) {
 	string input = readInput(6, argv);
 	cout << "Part 1: " << solution_1(input) << '\n';
-	timeFunctionAndPrint(solution_1, input, 10000);
+	timeFunctionAndPrint(solution_1, input, 100000);
 	
 	cout << '\n';
 
 	cout << "Part 2: " << solution_2(input) << '\n';
-	timeFunctionAndPrint(solution_2, input, 10000);
+	timeFunctionAndPrint(solution_2, input, 100000);
 	return 0;
 }
 
