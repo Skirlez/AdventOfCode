@@ -15,6 +15,12 @@ inline int readNumberBackwardsUntilSpace(const string& str, int i) {
 	return num;
 }
 
+// returns the smaller X from the quadratic formula (*where a = 1)
+inline int64_t quadraticFormula(int64_t b, int64_t c) {
+	double discriminant = sqrt(b*b - 4*c);
+	return (int64_t)(((double)-b) - discriminant) >> 1;
+}
+
 int solution_1(const string& input) {
 	int multSum = 1;
 	int lineLength = input.size() / 2 + 1;
@@ -32,16 +38,14 @@ int solution_1(const string& input) {
 			c = input[i];
 		} while (c >= '0' && c <= '9');
 		
-		int time = readNumberBackwardsUntilSpace(input, i - 1);
+		int b = -readNumberBackwardsUntilSpace(input, i - 1);
 		// numbers always begin on the same index on the next line
-		int distance = readNumberBackwardsUntilSpace(input, i - 1 + lineLength);
+		int c = readNumberBackwardsUntilSpace(input, i - 1 + lineLength);
 
-		int waysToBeat = 0;
-		for (int j = 1; j < time; j++) {
-			if ((time - j) * j > distance)
-				waysToBeat++;
-		}
-		multSum *= waysToBeat;
+		int64_t x1 = quadraticFormula(b, c);
+		int64_t x2 = (-b) - x1 - 1;
+
+		multSum *= (x2 - x1);
 		i++;
 	}
 
@@ -61,29 +65,20 @@ inline int64_t readNumberBackwardsUntilEnd(const string& str, int i, int end) {
 	return num;
 }
 
+#define start 7
 int solution_2(const string& input) {
 	int multSum = 1;
 	int lineLength = input.size() / 2 + 1;
 
 	int i = lineLength - 1;
 
-	// we are doing the quadratic formula !!!!
-	#define start 7
-
-	const int a = 1;
 	int64_t b = -readNumberBackwardsUntilEnd(input, i - 1, start);
 	int64_t c = readNumberBackwardsUntilEnd(input, i - 1 + lineLength, start + lineLength + 1);
-	double discriminant = sqrt(b*b - 4*a*c);
 
- 	int64_t x1 = (-(double)b - discriminant) / 2*a;
-	int64_t midpoint = -b/2*a;
+ 	int64_t x1 = quadraticFormula(b, c);
+	int64_t x2 = (-b) - x1 - 1;
 
-	int64_t result = (midpoint - x1) * 2;
-
-	// if the midpoint is a whole number, we've counted it as two points in the previous calculation, so we must subtract 1
-	if (-b % 2 == 0)
-		result--; 
-	return result;
+	return (x2 - x1);
 }
 
 int main(int argc, char* argv[]) {
