@@ -69,6 +69,7 @@ inline vector<vector<numtype>*> createMapVector(vector<string>& vec) {
 	return mapVector;
 }
 
+
 int solution_1(const string& input) {
 	vector<string> vec = splitString(input, '\n');
 	vector<vector<numtype>*> mapVector = createMapVector(vec);
@@ -99,7 +100,7 @@ int solution_1(const string& input) {
 	return minLocation;
 }
 
-inline numtype getMinimumLocationRanged(numtype start, numtype end, int mapInd, int jStart, const vector<vector<numtype>*>& mapVector) {
+int numtype getMinimumLocationRanged(numtype start, numtype end, int mapInd, int jStart, const vector<vector<numtype>*>& mapVector) {
 	if (mapInd == mapVector.size())
 		return start;
 	

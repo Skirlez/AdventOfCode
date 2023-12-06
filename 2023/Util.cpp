@@ -57,14 +57,15 @@ long long timeFunction(SolutionFunction func, string input, const int iterations
 void timeFunctionAndPrint(SolutionFunction func, string input, const int iterations) {
 	cout << "Timing function (running " << iterations << " iterations...)" << '\n'; 
 	long long executionTime = timeFunction(func, input, iterations);
-
-	#define blinkTime 100000
-	long long runs = blinkTime / executionTime;
-
 	cout << "The function took " << executionTime << " microseconds to run on average from " 
 		<< iterations << " iterations." << '\n';
-	cout << "The smallest accepted average duration for blinking is 100 milliseconds." 
-		<< " The function would run " << runs << " times in one blink." << '\n';
+
+	if (executionTime != 0) {
+		#define blinkTime 100000
+		long long runs = blinkTime / executionTime;
+		cout << "The smallest accepted average duration for blinking is 100 milliseconds." 
+			<< " The function would run " << runs << " times in one blink." << '\n';
+	}
 }
 
 
@@ -76,6 +77,10 @@ string readInput(int day, char* argv[]) {
 	ifstream inputFile = ifstream((stringstream() << argv[1] << '\\' << day << ".txt").str());
 	string fileContent = string((istreambuf_iterator<char>(inputFile)), istreambuf_iterator<char>());
 
+	// idiot detector
+	while (fileContent.back() == '\n')
+		fileContent.erase(fileContent.size() - 1);
+	
 	inputFile.close();
 	return fileContent;
 }
