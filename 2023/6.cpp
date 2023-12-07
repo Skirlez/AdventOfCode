@@ -23,7 +23,7 @@ inline int64_t quadraticFormula(int64_t b, int64_t c) {
 
 int solution_1(const string& input) {
 	int multSum = 1;
-	int lineLength = input.size() / 2 + 1;
+	int lineLength = input.size() / 2;
 
 	int i = 7; // safe start position
 	char c;

@@ -96,7 +96,8 @@ string readInput(int day, char* argv[]) {
 	// idiot detector
 	while (fileContent.back() == '\n')
 		fileContent.erase(fileContent.size() - 1);
-	
+	fileContent.push_back('\n');
+
 	inputFile.close();
 	return fileContent;
 }
