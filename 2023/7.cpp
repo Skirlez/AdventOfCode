@@ -29,7 +29,7 @@ inline void getHandCards(const char* str, int& i, unordered_set<char>& set, Hand
 	i++; // go over the space (it's always there)
 }
 
-inline HandType getHandType(unordered_set<char>& set, Hand& hand) {
+inline HandType getHandType(const unordered_set<char>& set, const Hand& hand) {
 	int size = set.size();
 	if (size == 1) // FIVE KIND
 		return HandType::FIVE_KIND;
@@ -50,7 +50,7 @@ inline HandType getHandType(unordered_set<char>& set, Hand& hand) {
 		char uniqueChars[2];
 		int size = 0;
 
-		std::unordered_set<char>::iterator it = set.begin();
+		std::unordered_set<char>::const_iterator it = set.cbegin();
 		uniqueChars[0] = *it;
 		it++;
 		uniqueChars[1] = *it;
@@ -76,7 +76,7 @@ inline HandType getHandType(unordered_set<char>& set, Hand& hand) {
 	return HandType::HIGH_CARD;
 }
 
-inline HandType getHandTypeJoker(unordered_set<char>& set, Hand& hand) {
+inline HandType getHandTypeJoker(const unordered_set<char>& set, const Hand& hand) {
 	int size = set.size();
 	if (size == 1 || size == 2) // FIVE KIND
 		return HandType::FIVE_KIND;
@@ -167,7 +167,7 @@ inline Hand getNextHandJoker(const char* str, int& i) {
 
 int jokerWorth = 11;
 // i'm *pretty* sure this is still faster than an an entire hashset object dedicated to 6 chars, but it looks very bad...
-inline int getCardWorth(char& c) {
+inline int getCardWorth(const char& c) {
 	if (c >= '2' && c <= '9')
 		return c - '0';
 	else if (c == 'T')
@@ -181,7 +181,7 @@ inline int getCardWorth(char& c) {
 	return 14;
 }
 
-inline bool isRightHandStronger(Hand left, Hand right) {
+inline bool isRightHandStronger(const Hand& left, const Hand& right) {
 	for (int i = 0; i < 5; i++) {
 		int l = getCardWorth(left.cards[i]);
 		int r = getCardWorth(right.cards[i]); 
@@ -194,7 +194,7 @@ inline bool isRightHandStronger(Hand left, Hand right) {
 }
 
 
-inline void addHandToHandVector(Hand& hand, vector<Hand>& vec) {
+inline void addHandToHandVector(const Hand& hand, vector<Hand>& vec) {
 	if (vec.empty()) {
 		vec.push_back(hand);
 		return;
