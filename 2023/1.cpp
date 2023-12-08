@@ -4,26 +4,43 @@
 using namespace std;
 
 #define NUMBER_STRING_ARR_SIZE 9
-string arr[NUMBER_STRING_ARR_SIZE] = {"one", "two", "six", "four", "five", "nine", "three", "seven", "eight"};
-int shiftArounds[NUMBER_STRING_ARR_SIZE] = {1, 2, 6, 4, 5, 9, 3, 7, 8};
+string arr[NUMBER_STRING_ARR_SIZE] = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
+int progress[NUMBER_STRING_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-inline int findNumberInString(const string& sub) {
+inline int progressNumberInString(const string& str, const int& ind) {
 	for (int i = 0; i < NUMBER_STRING_ARR_SIZE; i++) {
-		string& numString = arr[i];
-		if (sub.size() < numString.size())
-			return 0;
-		if (sub.find(numString) != string::npos)
-			return shiftArounds[i];
+		const string& num = arr[i];
+		if (num[progress[i]] == str[ind]) {
+			progress[i]++;
+			if (progress[i] == num.size())
+				return (i + 1);
+		}
+		else
+			progress[i] = (num[0] == str[ind]);
 	}
 	return 0;
 }
+inline int progressNumberInStringBackwards(const string& str, const int& ind) {
+	for (int i = 0; i < NUMBER_STRING_ARR_SIZE; i++) {
+		const string& num = arr[i];
+		if (num[num.size() - progress[i] - 1] == str[ind]) {
+			progress[i]++;
+			if (progress[i] == num.size())
+				return (i + 1);
+		}
+		else
+			progress[i] = (num[num.size() - 1] == str[ind]);
+	}
+	return 0;
+}
+
 
 int solution_1(const string& input) {
 	vector<string> vec = splitString(input, '\n');
 	int sum = 0;
 	int vecSize = vec.size();
 	for (int i = 0; i < vecSize; i++) {
-		string& str = vec[i];
+		const string& str = vec[i];
 		int size = str.size();
 		int digit = 0;
 		for (int j = 0; j < size; j++) {
@@ -51,7 +68,7 @@ int solution_2(const string& input) {
 	int sum = 0;
 	int vecSize = vec.size();
 	for (int i = 0; i < vecSize; i++) {
-		string& str = vec[i];
+		const string& str = vec[i];
 		int size = str.size();
 		int digit = 0;
 		for (int j = 0; j < size; j++) {
@@ -59,31 +76,25 @@ int solution_2(const string& input) {
 			if (digit >= 0 && digit <= 9)
 				break;
 
-			if (j >= 2) {
-				string sub = str.substr(0, j + 1);
-				digit = findNumberInString(sub);
-				if (digit != 0)
-					break;
-			}
+			digit = progressNumberInString(str, j);
+			if (digit != 0)
+				break;
 		}
 		int tens = digit * 10;
-
+		fill(progress, progress + NUMBER_STRING_ARR_SIZE, 0);
 
 		for (int j = size - 1; j >= 0; j--) {
 			digit = str[j] - '0';
 			if (digit >= 0 && digit <= 9)
 				break;
 				
-			int ind = size - 1 - j;
-			if (ind >= 2) {
-				string sub = str.substr(j, ind + 1);
-				digit = findNumberInString(sub);
-				if (digit != 0)
-					break;
-			}
+			digit = progressNumberInStringBackwards(str, j);
+			if (digit != 0)
+				break;
 		}
 
 		sum += tens + digit;
+		fill(progress, progress + NUMBER_STRING_ARR_SIZE, 0);
 	}
 	return sum;
 }
