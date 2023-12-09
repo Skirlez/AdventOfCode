@@ -47,9 +47,10 @@ int solution_1(const string& input) {
 			}
 		}
 		reverse(sublist.begin(), sublist.end());
+		vector<int> nextSublist = vector<int>();
+		
 		bool allZeros;
 		do {
-			vector<int> nextSublist = vector<int>();
 			int prevNum = sublist.front();
 			lastElements.push_back(sublist.back());
 			int sublistSize = sublist.size();
@@ -62,10 +63,12 @@ int solution_1(const string& input) {
 				nextSublist.push_back(newNum);
 			}
 			sublist = nextSublist;
+			nextSublist.clear();
 		} while(!allZeros);
 
 		for (int j = 0; j < lastElements.size(); j++)
 			sum += lastElements[j];
+
 	}
 	return sum;
 }
@@ -90,9 +93,10 @@ int solution_2(const string& input) {
 			firstElements.push_back(prevNum);
 		}
 		reverse(sublist.begin(), sublist.end());
+		
 		bool allZeros;
+		vector<int> nextSublist = vector<int>();
 		do {
-			vector<int> nextSublist = vector<int>();
 			int prevNum = sublist.front();
 			firstElements.push_back(prevNum);
 			int sublistSize = sublist.size();
@@ -105,6 +109,7 @@ int solution_2(const string& input) {
 				nextSublist.push_back(newNum);
 			}
 			sublist = nextSublist;
+			nextSublist.clear();
 		} while(!allZeros);
 		int64_t extrapolation = 0;
 		for (int j = firstElements.size() - 1; j >= 0; j--)
