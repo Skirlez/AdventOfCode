@@ -116,8 +116,6 @@ inline HandType getHandTypeJoker(const unordered_set<char>& set, const Hand& han
 
 }
 
-
-
 inline int readHandBid(const char* str, int& i) {
 	// numbers are at most 4 digits, so lets assume they are and divide by 10 if we're wrong
 	// (there is only 1 4-digit hand in my input file)
@@ -195,10 +193,6 @@ inline bool isRightHandStronger(const Hand& left, const Hand& right) {
 
 
 inline void addHandToHandVector(const Hand& hand, vector<Hand>& vec) {
-	if (vec.empty()) {
-		vec.push_back(hand);
-		return;
-	}
     int low = 0;
     int high = vec.size();
 
@@ -235,8 +229,7 @@ int solution_1(const string& input) {
 		vector<Hand>& vec = *handsTypeSeparator[i];
 		int vecSize = vec.size();
 		for (int j = 0; j < vecSize; j++) {
-			int bid = vec[j].bid;
-			winnings += rank * bid;
+			winnings += rank * vec[j].bid;
 			rank++;
 		}
 		delete handsTypeSeparator[i];
