@@ -11,6 +11,13 @@ inline int findChar(const char* str, char c) {
 	return i;
 }
 
+inline void wrapAroundAngle(int& angle) {
+    if (angle < 0)
+        angle = 360 - ((-angle) % 360);
+	else
+        angle %= 360;
+}
+
 int roundSin(const int& angle) {
 	if (angle == 90)
 		return 1;
@@ -26,17 +33,9 @@ int roundCos(const int& angle) {
 	return 0;
 }
 
-inline void wrapAroundAngle(int& angle) {
-	while (angle < 0)
-		angle += 360;
-	while (angle >= 360)
-		angle -= 360;
-	
-}
-
 inline bool advanceMaze(const char* str, const int& lineLength, int& i, int& angle) {
 	i += (-roundSin(angle) * lineLength) + roundCos(angle);
-	int angleMulti = (roundCos(angle) != 0) * 2 - 1; // if moving horizontally, 1, otherwise, -1
+	int angleMulti = ((roundCos(angle) != 0) << 1) - 1; // if horizontal 1, else -1
 	const char& next = str[i];
 	if (next == 'S')
 		return true;
@@ -77,25 +76,17 @@ int solution_1(const string& input) {
 			break;
 	}
 	
-
 	return count / 2;
 }
 
-void floodFill(char* str, const int& pos, const int& lineLength, const int& lastInd) {
-	char c = str[pos];
-	if (c == '.') {
-		str[pos] = 'O';
-		if (pos + lineLength <= lastInd) {
-			floodFill(str, pos + lineLength, lineLength, lastInd);
-			if (pos <= lastInd)
-				floodFill(str, pos + 1, lineLength, lastInd);
-		}
-		if (pos - lineLength >= 0) {
-			floodFill(str, pos - lineLength, lineLength, lastInd);
-			if (pos >= 0)
-				floodFill(str, pos - 1, lineLength, lastInd);
-		}
-	}
+void floodFill(char* str, int pos, int dir, bool horizontal, const int& lineLength, const int& lastInd) {
+	pos += (lineLength * dir * !horizontal) + (dir * horizontal);
+	if (pos < 0 || pos > lastInd || str[pos] != '.')
+		return;
+	str[pos] = 'I';
+	floodFill(str, pos, dir, horizontal, lineLength, lastInd);
+	floodFill(str, pos, 1, !horizontal, lineLength, lastInd);
+	floodFill(str, pos, -1, !horizontal, lineLength, lastInd);
 }
 
 
@@ -146,18 +137,15 @@ int solution_2(const string& input) {
 		if (prevAngle == angle) {
 			int sideAngle = angle + 90 * dir;
 			wrapAroundAngle(sideAngle);
-			int floodStart = i + (-roundSin(sideAngle) * lineLength) + roundCos(sideAngle);
-			floodFill(copy, floodStart, lineLength, size - 1);
+			floodFill(copy, i, -roundSin(sideAngle) + roundCos(sideAngle), roundCos(sideAngle) != 0, lineLength, size - 1);
 		}
 		else {
 			int prevSideAngle = prevAngle + 90 * dir;
 			int sideAngle = angle + 90 * dir;
 			wrapAroundAngle(sideAngle);
 			wrapAroundAngle(prevSideAngle);
-			int floodStart1 = i + (-roundSin(prevSideAngle) * lineLength) + roundCos(prevSideAngle);
-			int floodStart2 = i + (-roundSin(sideAngle) * lineLength) + roundCos(sideAngle);
-			floodFill(copy, floodStart1, lineLength, size - 1);
-			floodFill(copy, floodStart2, lineLength, size - 1);
+			floodFill(copy, i, -roundSin(prevSideAngle) + roundCos(prevSideAngle), roundCos(prevSideAngle) != 0, lineLength, size - 1);
+			floodFill(copy, i, -roundSin(sideAngle) + roundCos(sideAngle), roundCos(sideAngle) != 0, lineLength, size - 1);
 		}
 		if (done)
 			break;
@@ -165,7 +153,7 @@ int solution_2(const string& input) {
 
 	int count = 0;
 	for (int j = 0; j < size; j++) {
-		if (copy[j] == 'O')
+		if (copy[j] == 'I')
 			count++;
 	}
 	delete[] copy;
