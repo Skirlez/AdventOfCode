@@ -4,6 +4,16 @@ As my timezone does not allow me to participate in the leaderboards, I have take
 
 Each file expects to be given a directory which holds "n.txt", the input file for day n, as a console argument.
 
-Each file will print the answer and the average time to solve for both part 1 and 2. Timing the solutions works by checking how long the function takes to run some amount of times, divided by that amount (usually 10,000).
+Each file will print the answer and the average time to solve for both part 1 and 2. Each year folder contains a table with the results.
 
-To run: I usually build with GCC, compiling the .cpp of the day with Util.cpp included. When timing the solutions, I use -Ofast as a compiler argument.
+Timing the solutions works by measuring how long the solution function takes to run some amount of times, divided by that amount (usually 10,000).
+The functions will always recieve the input as a string, and how they parse it will add to the total time.
+Reading the file from disk is done outside of the solution functions on purpose, and the time it takes is not counted.
+
+Solution functions cannot do input file specific optimizations, like storing the position of a character without reading the string,
+or storing the width of the input (distance to newline) without parsing the string. They are made to be general, and should work with everyone's inputs and example inputs.
+
+They also cannot use any information/properties that aren't explicity given, unless the property being exploited is intentionally and sneakily inserted into all input files (see 2023 Day 8 Part 2).
+
+To run: I usually build with GCC, C++23, compiling both the .cpp of the day and Util.cpp together. When timing the solutions, I use -Ofast as a compiler argument.
+

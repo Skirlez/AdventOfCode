@@ -4,12 +4,6 @@
 
 using namespace std;
 
-inline int findChar(const char* str, char c) {
-	int i = 0;
-	while (str[i] != c) 
-		i++;
-	return i;
-}
 
 inline void wrapAroundAngle(int& angle) {
     if (angle < 0)

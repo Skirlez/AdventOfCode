@@ -45,6 +45,7 @@ int stringToInt(string str) {
 	return num;
 }
 
+
 unsigned long long timeFunction(SolutionFunction func, string input, const int iterations) {
 	auto start = std::chrono::high_resolution_clock::now();
 	for (int m = 0; m < iterations; m++)
@@ -87,10 +88,22 @@ void timeFunctionAndPrint(SolutionFunction func, string input, const int iterati
 
 string readInput(int day, char* argv[]) {
 	if (argv[1] == nullptr) {
-		std::cerr << "Error: Please provide the path to the inputs folder" << '\n';
+		cerr << "Error: Please provide the path to the inputs folder" << '\n';
 		exit(EXIT_FAILURE);
 	}
 	ifstream inputFile = ifstream((stringstream() << argv[1] << '\\' << day << ".txt").str());
+    if (!inputFile.is_open()) {
+		if (day >= 10) {
+			cerr << "Error: input file not found. Please name it " << day << ".txt and place it in the provided folder." << '\n';
+			exit(EXIT_FAILURE);
+		}
+        inputFile = ifstream((stringstream() << argv[1] << '\\' << '0' << day << ".txt").str());
+		if (!inputFile.is_open()) {
+			cerr << "Error: input file not found. Please name it either " << day << ".txt or 0" << day << ".txt and place it in the provided folder." << '\n';
+        	exit(EXIT_FAILURE);
+		}
+    }
+
 	string fileContent = string((istreambuf_iterator<char>(inputFile)), istreambuf_iterator<char>());
 
 	// idiot detector
