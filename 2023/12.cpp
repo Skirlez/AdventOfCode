@@ -74,7 +74,6 @@ template <typename T> class Arrangement {
 				return (SpringStatus)(((springStatus) & (one << ind)) != 0);
 		}
 };
-
 vector<vector<vector<int64_t>>> cache;
 bool doCache = false;
 template <typename T>
@@ -96,41 +95,29 @@ int64_t getArrangements(const Arrangement<T>& arrangement, const vector<int>& ha
 			hashesFound = 0;
 			hashIndex--;
 			continue;
-		}
-		if (status == SpringStatus::DAMAGED)
-			hashesFound++;
-		else { // unknown
-
+		}	
+		else if (status == SpringStatus::UNKNOWN) {
 			// pretend it's damaged, send another guy to pretend it's working
-
-			if (hashIndex == -1)
-				return arrangements + getArrangements(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);
 			if (doCache) {
 				int64_t add;
-				if (cache[hashIndex][amountEaten][hashesFound] == -1) {
+				if (cache[hashIndex + 1][amountEaten][hashesFound] == -1) {
 					add = getArrangements(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);
-					cache[hashIndex][amountEaten][hashesFound] = add;
+					cache[hashIndex + 1][amountEaten][hashesFound] = add;
 				}
-				else {
-					add = cache[hashIndex][amountEaten][hashesFound];
-				}
+				else
+					add = cache[hashIndex + 1][amountEaten][hashesFound];
 				arrangements += add;
 			}
 			else
-				arrangements += getArrangements(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);
-			
-
-			
-
-			hashesFound++;
-
+				arrangements += getArrangements(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);	
 		}	
-		if ((hashIndex == -1 && hashesFound > 0) || (hashesFound > hashCounts[hashIndex]))
+		hashesFound++; // either we found a hash or we're pretending there is one
+		if ((hashIndex == -1) || (hashesFound > hashCounts[hashIndex]))
 			return arrangements;
 	}
+	
 	if (hashCounts[hashIndex] == hashesFound)
 		hashIndex--;
-
 	if (hashIndex >= 0)
 		return arrangements;
 
@@ -148,7 +135,6 @@ int solution_1(const string& input) {
 	int pos = 0;
 	
 	vector<int> hashCounts = vector<int>();
-	vector<int> questionIndicies = vector<int>();
 	Arrangement<int32_t> a;
 	while (pos < size) {
 		while (str[pos] != ' ') {
@@ -172,16 +158,11 @@ int solution_1(const string& input) {
 			int num = readNumberBackwards(str, pos);
 			hashCounts.push_back(num);
 		}
-		for (size_t i = cache.size(); i < hashCounts.size(); i++) {
-			cache.push_back(vector<vector<int64_t>>());
-		}
-		
 		int arrangements = getArrangements(a, hashCounts, hashCounts.size() - 1, 0, 0);
 
 		//cout << arrangements << '\n';
 		sum += arrangements;
 		hashCounts.clear();
-		questionIndicies.clear();
 		pos = endLinePos + 1;
 		a.clear();
 	}
@@ -192,13 +173,9 @@ int64_t solution_2(const string& input) {
 	int size = input.size();
 	char* str = new char[size + 1];
 	strncpy(str, input.c_str(), size + 1);
-
 	int64_t sum = 0;
-
 	int pos = 0;
-	
 	vector<int> hashCounts = vector<int>();
-	vector<int> questionIndicies = vector<int>();
 	Arrangement<__int128_t> a;
 
 	while (pos < size) {
@@ -238,9 +215,9 @@ int64_t solution_2(const string& input) {
 			}
 		}
 
-		for (size_t i = cache.size(); i < hashCounts.size(); i++) {
+		for (size_t i = cache.size(); i < hashCounts.size() + 1; i++)
 			cache.push_back(vector<vector<int64_t>>());
-		}
+		
 		for (size_t i = 0; i < cache.size(); i++) {
 			cache[i].resize(a.bitCount + 1);
 			for (size_t j = 0; j <= a.bitCount; j++) {
@@ -250,12 +227,9 @@ int64_t solution_2(const string& input) {
 			}
 		}
 	
-
-		
 		int64_t arrangements = getArrangements(a, hashCounts, hashCounts.size() - 1, 0, 0);
 		sum += arrangements;
 		hashCounts.clear();
-		questionIndicies.clear();
 		pos = endLinePos + 1;
 		a.clear();
 	}
