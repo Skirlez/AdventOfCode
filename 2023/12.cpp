@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include "Util.h"
+#include <algorithm>
 
 using namespace std;
 
@@ -17,78 +18,35 @@ inline int readNumberBackwards(const char* str, int& pos) {
 	}
 }
 
-inline bool isValidArrangement(int64_t arrangement, const int& bits, const vector<int>& hashCounts) {
-	int hashesFound = 0;
-	int hashIndex = hashCounts.size() - 1;
-
-	for (int i = bits; i >= 0; i--) {
-		if ((arrangement & 1) == 0) {
-			if (hashesFound != 0) {
-				if (hashCounts[hashIndex] != hashesFound)
-					return false;
-				hashIndex--;
-				hashesFound = 0;
-			}
-			arrangement >>= 1;
-			continue;
-		}
-		hashesFound++;
-		arrangement >>= 1;
-    }
-	return (hashIndex == -1);
-}
-
 enum SpringStatus {
 	WORKING,
 	DAMAGED,
 	UNKNOWN
 };
 
-class Arrangement {
+template <typename T> class Arrangement {
 	public: 
-		int64_t springStatus = 0;
-		int64_t unknownSprings = 0;
+		T springStatus;
+		T unknownSprings;
 		int64_t bitCount = 0;
 		
+		T one = (T)1;
 
 		Arrangement() {
 			springStatus = 0;
 			unknownSprings = 0;
 			bitCount = 0;
 		}
-		Arrangement(const Arrangement& other) {
-			springStatus = other.springStatus;
-			unknownSprings = other.unknownSprings;
-			bitCount = other.bitCount;
-		}
 
 		void add(SpringStatus status) {
+			T bits = (T)(status);
 			if (status == SpringStatus::UNKNOWN)
-				unknownSprings |= (1 << bitCount);
+				unknownSprings |= (one << bitCount);
 			else 
-				springStatus |= (status << bitCount);
+				springStatus |= (bits << bitCount);
 			
 			bitCount++;
 		}
-		void addStart(SpringStatus status) {
-			unknownSprings <<= 1;
-			springStatus <<= 1;
-			if (status == SpringStatus::UNKNOWN)
-				unknownSprings |= 1;
-			else 
-				springStatus |= status;
-			
-			bitCount++;
-		}
-		void add(int64_t statusBits, int64_t unknownBits, int newBitCount) {
-			springStatus <<= bitCount;
-			springStatus |= statusBits;
-			unknownSprings <<= bitCount;
-			unknownSprings |= unknownBits;
-
-			bitCount += newBitCount;
-		}
-
 		void clear() {
 			springStatus = 0;
 			unknownSprings = 0;
@@ -96,9 +54,11 @@ class Arrangement {
 		}
 		void print() {
 			for (int i = 0; i < bitCount; i++) {
-				if ((unknownSprings & (1 << i)) == (1 << i)) 
+				
+
+				if ((unknownSprings & one) == one) 
 					cout << '?';
-				else if ((springStatus & (1 << i)) != (1 << i))
+				else if ((springStatus & one) != one)
 					cout << '.';
 				else
 					cout << '#';
@@ -106,26 +66,29 @@ class Arrangement {
 			}
 			cout << '\n';
 		}
-		SpringStatus eatFirst() {
-			
-			SpringStatus ret;
-			if ((unknownSprings & 1) == 1)
-				ret = SpringStatus::UNKNOWN;
+		
+		SpringStatus getStatusAt(int ind) const {
+			if ((unknownSprings & (one << ind)) != 0)
+				return SpringStatus::UNKNOWN;
 			else
-				ret = (SpringStatus)((springStatus) & 1);
- 			bitCount--;
-			unknownSprings >>= 1;
-			springStatus >>= 1;
-			return ret;
+				return (SpringStatus)(((springStatus) & (one << ind)) != 0);
 		}
 };
 
-
-int getArrangements(Arrangement& arrangement, const vector<int>& hashCounts, int hashIndex, int hashesFound) {
-	int arrangements = 0;
-	while (arrangement.bitCount > 0) {
-		SpringStatus status = arrangement.eatFirst();
-		if (status == SpringStatus::WORKING) {
+vector<vector<vector<int64_t>>> cache;
+bool doCache = false;
+template <typename T>
+int64_t getArrangements(const Arrangement<T>& arrangement, const vector<int>& hashCounts, int hashIndex, int hashesFound, int amountEaten) {
+	int64_t arrangements = 0;
+	bool entry = true;
+	while (arrangement.bitCount > amountEaten) {
+		SpringStatus status;
+		if (!entry) {
+			status = arrangement.getStatusAt(amountEaten);
+			amountEaten++;
+		}
+		if (entry || status == SpringStatus::WORKING) {
+			entry = false;
 			if (hashesFound == 0)
 				continue;
 			if (hashCounts[hashIndex] != hashesFound)
@@ -137,18 +100,32 @@ int getArrangements(Arrangement& arrangement, const vector<int>& hashCounts, int
 		if (status == SpringStatus::DAMAGED)
 			hashesFound++;
 		else { // unknown
+
 			// pretend it's damaged, send another guy to pretend it's working
-			
-			Arrangement copy = arrangement;
-		
-			copy.addStart(SpringStatus::WORKING);
-			arrangements += getArrangements(copy, hashCounts, hashIndex, hashesFound);
+
 			if (hashIndex == -1)
-				return arrangements;
+				return arrangements + getArrangements(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);
+			if (doCache) {
+				int64_t add;
+				if (cache[hashIndex][amountEaten][hashesFound] == -1) {
+					add = getArrangements(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);
+					cache[hashIndex][amountEaten][hashesFound] = add;
+				}
+				else {
+					add = cache[hashIndex][amountEaten][hashesFound];
+				}
+				arrangements += add;
+			}
+			else
+				arrangements += getArrangements(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);
+			
+
+			
+
 			hashesFound++;
 
 		}	
-		if (hashesFound > hashCounts[hashIndex])
+		if ((hashIndex == -1 && hashesFound > 0) || (hashesFound > hashCounts[hashIndex]))
 			return arrangements;
 	}
 	if (hashCounts[hashIndex] == hashesFound)
@@ -161,6 +138,7 @@ int getArrangements(Arrangement& arrangement, const vector<int>& hashCounts, int
 }
 
 int solution_1(const string& input) {
+	doCache = false;
 	int size = input.size();
 	char* str = new char[size + 1];
 	strncpy(str, input.c_str(), size + 1);
@@ -171,9 +149,8 @@ int solution_1(const string& input) {
 	
 	vector<int> hashCounts = vector<int>();
 	vector<int> questionIndicies = vector<int>();
-	Arrangement a;
+	Arrangement<int32_t> a;
 	while (pos < size) {
-		int lineStartPos = pos;
 		while (str[pos] != ' ') {
 			if (str[pos] == '?')
 				a.add(SpringStatus::UNKNOWN);
@@ -195,9 +172,87 @@ int solution_1(const string& input) {
 			int num = readNumberBackwards(str, pos);
 			hashCounts.push_back(num);
 		}
+		for (size_t i = cache.size(); i < hashCounts.size(); i++) {
+			cache.push_back(vector<vector<int64_t>>());
+		}
 		
-		int arrangements = getArrangements(a, hashCounts, hashCounts.size() - 1, 0);
+		int arrangements = getArrangements(a, hashCounts, hashCounts.size() - 1, 0, 0);
+
 		//cout << arrangements << '\n';
+		sum += arrangements;
+		hashCounts.clear();
+		questionIndicies.clear();
+		pos = endLinePos + 1;
+		a.clear();
+	}
+	return sum;
+}
+int64_t solution_2(const string& input) {
+	doCache = true;
+	int size = input.size();
+	char* str = new char[size + 1];
+	strncpy(str, input.c_str(), size + 1);
+
+	int64_t sum = 0;
+
+	int pos = 0;
+	
+	vector<int> hashCounts = vector<int>();
+	vector<int> questionIndicies = vector<int>();
+	Arrangement<__int128_t> a;
+
+	while (pos < size) {
+		int lineStartPos = pos;
+		for (int j = 0; j < 5; j++) {
+			pos = lineStartPos;
+			if (j != 0)
+				a.add(SpringStatus::UNKNOWN);
+			while (str[pos] != ' ') {
+				if (str[pos] == '?')
+					a.add(SpringStatus::UNKNOWN);
+				else if (str[pos] == '#')
+					a.add(SpringStatus::DAMAGED);
+				else
+					a.add(SpringStatus::WORKING);
+				
+				pos++;
+			}
+		}
+		if (a.bitCount >= 120) {
+			cout << "here";
+		}
+
+		while (str[pos] != '\n')
+			pos++;
+		
+
+
+
+		int endLinePos = pos;
+		for (int j = 0; j < 5; j++) {
+			pos = endLinePos;
+			while (str[pos] != ' ') {
+				pos--;
+				int num = readNumberBackwards(str, pos);
+				hashCounts.push_back(num);
+			}
+		}
+
+		for (size_t i = cache.size(); i < hashCounts.size(); i++) {
+			cache.push_back(vector<vector<int64_t>>());
+		}
+		for (size_t i = 0; i < cache.size(); i++) {
+			cache[i].resize(a.bitCount + 1);
+			for (size_t j = 0; j <= a.bitCount; j++) {
+				cache[i][j].resize(a.bitCount + 1);
+				for (int m = 0; m <= a.bitCount; m++)
+					cache[i][j][m] = -1;
+			}
+		}
+	
+
+		
+		int64_t arrangements = getArrangements(a, hashCounts, hashCounts.size() - 1, 0, 0);
 		sum += arrangements;
 		hashCounts.clear();
 		questionIndicies.clear();
@@ -208,125 +263,16 @@ int solution_1(const string& input) {
 }
 
 
-
-
-
-
-int solution_2(const string& input) {
-	int size = input.size();
-	char* str = new char[size + 1];
-	strncpy(str, input.c_str(), size + 1);
-
-	int sum = 0;
-
-	int pos = 0;
-	
-	vector<int> hashCounts = vector<int>();
-	vector<int> questionIndicies = vector<int>();
-	
-	while (pos < size) {
-		int lineStartPos = pos;
-
-		Arrangement a;
-		Arrangement b;
-		Arrangement c;
-
-		int totalHashes = 0;
-		int bits = 0;
-		
-		while (str[pos] != ' ') {
-			//cout << str[pos];
-			if (str[pos] == '?') {
-				a.add(SpringStatus::UNKNOWN);
-				b.springStatus = c.springStatus;
-				b.unknownSprings = c.unknownSprings;
-				c.clear();
-			}
-			else if (str[pos] == '#') {
-				a.add(SpringStatus::DAMAGED);
-				c.add(SpringStatus::DAMAGED);
-			}
-			else {
-				a.add(SpringStatus::WORKING);
-				c.add(SpringStatus::WORKING);
-			}
-
-			pos++;
-		}
-		cout << '\n';
-		a.print();
-		b.print();
-		c.print();
-
-		int hashesFound = 0;
-		while (a.bitCount != 0) {
-			SpringStatus status = a.eatFirst();
-			if (status == SpringStatus::WORKING) {
-				if (hashesFound == 0)
-					continue;
-
-				continue;
-			}
-			if (status == SpringStatus::UNKNOWN) {
-				continue;
-			}
-			hashesFound++;
-		}
-
-
-		while (str[pos] != '\n')
-			pos++;
-		int endLinePos = pos;
-
-		while (str[pos] != ' ') {
-			pos--;
-			int num = readNumberBackwards(str, pos);
-			hashCounts.push_back(num);
-		}
-		
-		
-
-		int allArrangements = 1 << size;
-		
-		int pb = 0;
-		int pcqb = 0;
-		int pcqa = 0;
-		/*
-		int64_t bArrangement = arrangement;
-		for (int i = 0; i < allArrangements; i++) {
-			int valueSums = 0;
-			for (int j = 0; j < size; j++) {
-				int value = (i >> j) & 1;
-				arrangement |= (value << questionIndicies[j]);
-				valueSums += value;
-			}
-			//printArrangement(arrangement, bits);
-			if (valueSums == requiredHashes)
-				pb += isValidArrangement(arrangement, bits, hashCounts);			
-			arrangement = bArrangement;
-		}
-		*/
-
-		sum += pb * pcqb*pcqb*pcqb * pcqa;
-		hashCounts.clear();
-		pos = endLinePos + 1;
-	}
-	return sum;
-
-	return 0;
-}
-
-
 int main(int argc, char* argv[]) {
 	string input = readInput(12, argv);
 
 	cout << "Part 1: " << solution_1(input) << '\n';
 	timeFunctionAndPrint(solution_1, input, 100);
 	
-	//cout << '\n';
+	cout << '\n';
 
-	//cout << "Part 2: " << solution_2(input) << '\n';
-	//timeFunctionAndPrint(solution_2, input, 10000);
+	cout << "Part 2: " << solution_2(input) << '\n';
+	timeFunctionAndPrint((SolutionFunction)solution_2, input, 10);
 	return 0;
 }
 
