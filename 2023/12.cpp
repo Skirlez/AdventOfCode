@@ -5,7 +5,7 @@
 
 using namespace std;
 
-inline int readNumberBackwards(const char* str, int& pos) {
+inline int readNumberBackwards(const char* str, size_t& pos) {
 	int num = 0;
 	int multiplier = 1;
 	while (true) {
@@ -74,10 +74,10 @@ template <typename T> class Arrangement {
 				return (SpringStatus)(((springStatus) & (one << ind)) != 0);
 		}
 };
+
 vector<vector<vector<int64_t>>> cache;
-bool doCache = false;
-template <typename T>
-int64_t getArrangements(const Arrangement<T>& arrangement, const vector<int>& hashCounts, int hashIndex, int hashesFound, int amountEaten) {
+
+template<typename T, bool DoCache> int64_t getArrangements(const Arrangement<T>& arrangement, const vector<int>& hashCounts, int hashIndex, int hashesFound, int amountEaten) {
 	int64_t arrangements = 0;
 	bool entry = true;
 	while (arrangement.bitCount > amountEaten) {
@@ -98,10 +98,10 @@ int64_t getArrangements(const Arrangement<T>& arrangement, const vector<int>& ha
 		}	
 		else if (status == SpringStatus::UNKNOWN) {
 			// pretend it's damaged, send another guy to pretend it's working
-			if (doCache) {
+			if (DoCache) {
 				int64_t add;
 				if (cache[hashIndex + 1][amountEaten][hashesFound] == -1) {
-					add = getArrangements(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);
+					add = getArrangements<T, true>(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);
 					cache[hashIndex + 1][amountEaten][hashesFound] = add;
 				}
 				else
@@ -109,13 +109,13 @@ int64_t getArrangements(const Arrangement<T>& arrangement, const vector<int>& ha
 				arrangements += add;
 			}
 			else
-				arrangements += getArrangements(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);	
+				arrangements += getArrangements<T, false>(arrangement, hashCounts, hashIndex, hashesFound, amountEaten);	
 		}	
 		hashesFound++; // either we found a hash or we're pretending there is one
 		if ((hashIndex == -1) || (hashesFound > hashCounts[hashIndex]))
 			return arrangements;
 	}
-	
+
 	if (hashCounts[hashIndex] == hashesFound)
 		hashIndex--;
 	if (hashIndex >= 0)
@@ -125,14 +125,11 @@ int64_t getArrangements(const Arrangement<T>& arrangement, const vector<int>& ha
 }
 
 int solution_1(const string& input) {
-	doCache = false;
-	int size = input.size();
-	char* str = new char[size + 1];
-	strncpy(str, input.c_str(), size + 1);
+	size_t size = input.size();
+	const char* str = input.c_str();
 
 	int sum = 0;
-
-	int pos = 0;
+	size_t pos = 0;
 	
 	vector<int> hashCounts = vector<int>();
 	Arrangement<int32_t> a;
@@ -158,7 +155,7 @@ int solution_1(const string& input) {
 			int num = readNumberBackwards(str, pos);
 			hashCounts.push_back(num);
 		}
-		int arrangements = getArrangements(a, hashCounts, hashCounts.size() - 1, 0, 0);
+		int arrangements = getArrangements<int32_t, false>(a, hashCounts, hashCounts.size() - 1, 0, 0);
 
 		//cout << arrangements << '\n';
 		sum += arrangements;
@@ -168,16 +165,17 @@ int solution_1(const string& input) {
 	}
 	return sum;
 }
+
 int64_t solution_2(const string& input) {
-	doCache = true;
-	int size = input.size();
-	char* str = new char[size + 1];
-	strncpy(str, input.c_str(), size + 1);
+	size_t size = input.size();
+	const char* str = input.c_str();
+
+	size_t pos = 0;
 	int64_t sum = 0;
-	int pos = 0;
+	
 	vector<int> hashCounts = vector<int>();
 	Arrangement<__int128_t> a;
-
+	
 	while (pos < size) {
 		int lineStartPos = pos;
 		for (int j = 0; j < 5; j++) {
@@ -195,16 +193,9 @@ int64_t solution_2(const string& input) {
 				pos++;
 			}
 		}
-		if (a.bitCount >= 120) {
-			cout << "here";
-		}
-
 		while (str[pos] != '\n')
 			pos++;
 		
-
-
-
 		int endLinePos = pos;
 		for (int j = 0; j < 5; j++) {
 			pos = endLinePos;
@@ -222,12 +213,11 @@ int64_t solution_2(const string& input) {
 			cache[i].resize(a.bitCount + 1);
 			for (size_t j = 0; j <= a.bitCount; j++) {
 				cache[i][j].resize(a.bitCount + 1);
-				for (int m = 0; m <= a.bitCount; m++)
-					cache[i][j][m] = -1;
+				fill(cache[i][j].begin(), cache[i][j].end(), -1);
 			}
 		}
 	
-		int64_t arrangements = getArrangements(a, hashCounts, hashCounts.size() - 1, 0, 0);
+		int64_t arrangements = getArrangements<__int128_t, true>(a, hashCounts, hashCounts.size() - 1, 0, 0);
 		sum += arrangements;
 		hashCounts.clear();
 		pos = endLinePos + 1;
