@@ -211,9 +211,9 @@ int64_t solution_2(const string& input) {
 		
 		for (size_t i = 0; i < cache.size(); i++) {
 			cache[i].resize(a.bitCount + 1);
+			vector<int64_t> vec = vector<int64_t>(a.bitCount + 1, -1);
 			for (size_t j = 0; j <= a.bitCount; j++) {
-				cache[i][j].resize(a.bitCount + 1);
-				fill(cache[i][j].begin(), cache[i][j].end(), -1);
+				cache[i][j] = vec;
 			}
 		}
 	

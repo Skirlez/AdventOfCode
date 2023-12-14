@@ -66,8 +66,13 @@ string nanoToMicro(unsigned long long num) {
 		resultString.insert(0, "0");
 		pos++;
 	}
-    resultString.insert(pos, ".");
-    resultString = resultString.substr(0, 6);
+	if (pos >= 5) {
+		resultString = resultString.substr(0, resultString.size() - 3);
+	}
+	else {
+		resultString.insert(pos, ".");
+		resultString = resultString.substr(0, 6);
+	}
     return resultString;
 }
 
