@@ -69,33 +69,36 @@ inline int getWeight(const char* str, size_t size, size_t lineLength, size_t dis
 	return sum;
 }
 
-inline void moveBoulders(char* str, size_t size, size_t dir, size_t start, size_t addStart) {
+inline void moveBoulders(char* str, const size_t& size, const size_t& dir, size_t start, 
+		const size_t& addStart, const size_t& iterations, const size_t& subIterations) {
+	
 	size_t pos = start;
-	vector<int> dotList;
+	int dotArray[subIterations]; 
 	int dotIndex = 0;
-
-	while (pos < size && pos >= 0) {
+	int dotArraySize = 0;
+	for (size_t i = 0; i < iterations; i++) {
 		start += addStart;
-		while (pos < size && pos >= 0) {
-			if (str[pos] == '.')
-				dotList.push_back(pos);
-			else if (str[pos] == '#') {
-				dotList.clear();
-				dotIndex = 0;
+		for (size_t j = 0; j < subIterations; j++) {
+			if (str[pos] == '.') {
+				dotArray[dotArraySize] = pos;
+				dotArraySize++;
 			}
-			else if (str[pos] == 'O' && ((dotList.size() - dotIndex) > 0)) {
-				str[dotList[dotIndex]] = 'O';
+			else if (str[pos] == '#') {
+				dotIndex = 0;
+				dotArraySize = 0;
+			}
+			else if (str[pos] == 'O' && ((dotArraySize - dotIndex) > 0)) {
+				str[dotArray[dotIndex]] = 'O';
 				str[pos] = '.';
-				dotList.push_back(pos);
+				dotArray[dotArraySize] = pos;
+				dotArraySize++;
 				dotIndex++;
 			}
-			else if (str[pos] == '\n')
-				break;
 			pos -= dir;
 		}
 		pos = start;
-		dotList.clear();
 		dotIndex = 0;
+		dotArraySize = 0;
 	}
 }
 
@@ -112,10 +115,10 @@ int solution_2(const string& input) {
 	string end;
 	char* data = str.data();
 	for (size_t i = 0; i < loopAmount; i++) {
-		moveBoulders(data, size, -lineLength, 0, 1);
-		moveBoulders(data, size, -1, 0, lineLength);
-		moveBoulders(data, size, lineLength, size - lineLength, 1);
-		moveBoulders(data, size, 1, lineLength - 2, lineLength);
+		moveBoulders(data, size, -lineLength, 0, 1, lineLength - 1, distanceFromBottom);
+		moveBoulders(data, size, -1, 0, lineLength, distanceFromBottom, lineLength - 1);
+		moveBoulders(data, size, lineLength, size - lineLength, 1, lineLength - 1, distanceFromBottom);
+		moveBoulders(data, size, 1, lineLength - 2, lineLength, distanceFromBottom, lineLength - 1);
 		if (set.count(str) == 0) {
 			string copy = str;
 			set.insert(copy);
@@ -145,7 +148,7 @@ int main(int argc, char* argv[]) {
 	cout << '\n';
 
 	cout << "Part 2: " << solution_2(input) << '\n';
-	timeFunctionAndPrint(solution_2, input, 10);
+	timeFunctionAndPrint(solution_2, input, 100);
 	return 0;
 }
 
