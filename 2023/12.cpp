@@ -174,7 +174,7 @@ int64_t solution_2(const string& input) {
 	int64_t sum = 0;
 	
 	vector<int> hashCounts = vector<int>();
-	Arrangement<__int128_t> a;
+	Arrangement<__uint128_t> a;
 	
 	while (pos < size) {
 		int lineStartPos = pos;
@@ -210,14 +210,15 @@ int64_t solution_2(const string& input) {
 			cache.push_back(vector<vector<int64_t>>());
 		
 		for (size_t i = 0; i < cache.size(); i++) {
-			cache[i].resize(a.bitCount + 1);
+			if (cache[i].size() < a.bitCount + 1)
+				cache[i].resize(a.bitCount + 1);
 			vector<int64_t> vec = vector<int64_t>(a.bitCount + 1, -1);
 			for (size_t j = 0; j <= a.bitCount; j++) {
 				cache[i][j] = vec;
 			}
 		}
 	
-		int64_t arrangements = getArrangements<__int128_t, true>(a, hashCounts, hashCounts.size() - 1, 0, 0);
+		int64_t arrangements = getArrangements<__uint128_t, true>(a, hashCounts, hashCounts.size() - 1, 0, 0);
 		sum += arrangements;
 		hashCounts.clear();
 		pos = endLinePos + 1;

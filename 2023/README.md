@@ -12,7 +12,7 @@ Timings on my CPU (Ryzen 7 3700X):
 |09|280|280||
 |10|68|265||
 |11|61|61||
-|12|950|102586||
+|12|950|56125|Part 2 solution relies on __int128_t|
 |13|25|27||
 |14|21|24103|Part 2 time varies a LOT depending on input|
 
