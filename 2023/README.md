@@ -14,7 +14,7 @@ Timings on my CPU (Ryzen 7 3700X):
 |11|61|61|
 |12|950|102586|
 |13|25|27|
-|14|21|332603|
+|14|21|191283|
 
 Give or take 10 μs for results above 200 μs. Might switch to a more consistent measurement method later.
 See the README in the repository's root for information on how the measurements are done.

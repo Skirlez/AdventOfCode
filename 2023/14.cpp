@@ -71,30 +71,31 @@ inline int getWeight(const char* str, size_t size, size_t lineLength, size_t dis
 
 inline void moveBoulders(char* str, size_t size, size_t dir, size_t start, size_t addStart) {
 	size_t pos = start;
+	vector<int> dotList;
+	int dotIndex = 0;
+
 	while (pos < size && pos >= 0) {
 		start += addStart;
 		while (pos < size && pos >= 0) {
-			if (str[pos] == '.') {
-				size_t savePos = pos;
-				pos -= dir;
-				while (pos < size && pos >= 0) {
-					if (str[pos] == '.') {
-						pos -= dir;
-						continue;
-					}
-					if (str[pos] == 'O') {
-						str[pos] = '.';
-						str[savePos] = 'O';
-						pos = savePos;
-					}
-					pos -= dir;
-					break;
-				}
-				continue;
+			if (str[pos] == '.')
+				dotList.push_back(pos);
+			else if (str[pos] == '#') {
+				dotList.clear();
+				dotIndex = 0;
 			}
+			else if (str[pos] == 'O' && ((dotList.size() - dotIndex) > 0)) {
+				str[dotList[dotIndex]] = 'O';
+				str[pos] = '.';
+				dotList.push_back(pos);
+				dotIndex++;
+			}
+			else if (str[pos] == '\n')
+				break;
 			pos -= dir;
 		}
 		pos = start;
+		dotList.clear();
+		dotIndex = 0;
 	}
 }
 
@@ -109,11 +110,12 @@ int solution_2(const string& input) {
 	vector<string> list;
 	string str = input;
 	string end;
+	char* data = str.data();
 	for (size_t i = 0; i < loopAmount; i++) {
-		moveBoulders(str.data(), size, -lineLength, 0, 1);
-		moveBoulders(str.data(), size, -1, 0, lineLength);
-		moveBoulders(str.data(), size, lineLength, size - lineLength, 1);
-		moveBoulders(str.data(), size, 1, lineLength - 2, lineLength);
+		moveBoulders(data, size, -lineLength, 0, 1);
+		moveBoulders(data, size, -1, 0, lineLength);
+		moveBoulders(data, size, lineLength, size - lineLength, 1);
+		moveBoulders(data, size, 1, lineLength - 2, lineLength);
 		if (set.count(str) == 0) {
 			string copy = str;
 			set.insert(copy);
