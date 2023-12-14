@@ -70,10 +70,9 @@ inline int getWeight(const char* str, size_t size, size_t lineLength, size_t dis
 }
 
 inline void moveBoulders(char* str, const size_t& size, const size_t& dir, size_t start, 
-		const size_t& addStart, const size_t& iterations, const size_t& subIterations) {
+		const size_t& addStart, const size_t& iterations, const size_t& subIterations, int dotArray[]) {
 	
 	size_t pos = start;
-	int dotArray[subIterations]; 
 	int dotIndex = 0;
 	int dotArraySize = 0;
 	for (size_t i = 0; i < iterations; i++) {
@@ -114,11 +113,13 @@ int solution_2(const string& input) {
 	string str = input;
 	string end;
 	char* data = str.data();
+	int dotArray1[distanceFromBottom]; 
+	int dotArray2[lineLength - 1]; 
 	for (size_t i = 0; i < loopAmount; i++) {
-		moveBoulders(data, size, -lineLength, 0, 1, lineLength - 1, distanceFromBottom);
-		moveBoulders(data, size, -1, 0, lineLength, distanceFromBottom, lineLength - 1);
-		moveBoulders(data, size, lineLength, size - lineLength, 1, lineLength - 1, distanceFromBottom);
-		moveBoulders(data, size, 1, lineLength - 2, lineLength, distanceFromBottom, lineLength - 1);
+		moveBoulders(data, size, -lineLength, 0, 1, lineLength - 1, distanceFromBottom, dotArray1);
+		moveBoulders(data, size, -1, 0, lineLength, distanceFromBottom, lineLength - 1, dotArray2);
+		moveBoulders(data, size, lineLength, size - lineLength, 1, lineLength - 1, distanceFromBottom, dotArray1);
+		moveBoulders(data, size, 1, lineLength - 2, lineLength, distanceFromBottom, lineLength - 1, dotArray2);
 		if (set.count(str) == 0) {
 			string copy = str;
 			set.insert(copy);
@@ -134,7 +135,6 @@ int solution_2(const string& input) {
 		end = list[loopStart + ind];
 		break;
 	}
-
 	int result = getWeight(end.c_str(), size, lineLength, distanceFromBottom);
 	return result;
 }
