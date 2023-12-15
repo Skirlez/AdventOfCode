@@ -12,8 +12,8 @@ typedef int (*SolutionFunction)(const string& str);
 unsigned long long timeFunction(SolutionFunction func, string input, const int iterations);
 void timeFunctionAndPrint(SolutionFunction func, string input, const int iterations);
 
-inline int findChar(const char* str, char c) {
-	int i = 0;
+inline size_t findChar(const char* str, char c) {
+	size_t i = 0;
 	while (str[i] != c) 
 		i++;
 	return i;

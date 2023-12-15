@@ -5,10 +5,10 @@ using namespace std;
 
 #define NUMBER_STRING_ARR_SIZE 9
 string arr[NUMBER_STRING_ARR_SIZE] = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
-int progress[NUMBER_STRING_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+unsigned int progress[NUMBER_STRING_ARR_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-inline int progressNumberInString(const string& str, const int& ind) {
-	for (int i = 0; i < NUMBER_STRING_ARR_SIZE; i++) {
+inline int progressNumberInString(const string& str, const size_t& ind) {
+	for (size_t i = 0; i < NUMBER_STRING_ARR_SIZE; i++) {
 		const string& num = arr[i];
 		if (num[progress[i]] == str[ind]) {
 			progress[i]++;
@@ -20,8 +20,8 @@ inline int progressNumberInString(const string& str, const int& ind) {
 	}
 	return 0;
 }
-inline int progressNumberInStringBackwards(const string& str, const int& ind) {
-	for (int i = 0; i < NUMBER_STRING_ARR_SIZE; i++) {
+inline int progressNumberInStringBackwards(const string& str, const size_t& ind) {
+	for (size_t i = 0; i < NUMBER_STRING_ARR_SIZE; i++) {
 		const string& num = arr[i];
 		if (num[num.size() - progress[i] - 1] == str[ind]) {
 			progress[i]++;
@@ -38,12 +38,12 @@ inline int progressNumberInStringBackwards(const string& str, const int& ind) {
 int solution_1(const string& input) {
 	vector<string> vec = splitString(input, '\n');
 	int sum = 0;
-	int vecSize = vec.size();
-	for (int i = 0; i < vecSize; i++) {
+	size_t vecSize = vec.size();
+	for (size_t i = 0; i < vecSize; i++) {
 		const string& str = vec[i];
-		int size = str.size();
+		size_t size = str.size();
 		int digit = 0;
-		for (int j = 0; j < size; j++) {
+		for (size_t j = 0; j < size; j++) {
 			digit = str[j] - '0';
 			if (digit >= 0 && digit <= 9)
 				break;
@@ -51,7 +51,7 @@ int solution_1(const string& input) {
 		int tens = digit * 10;
 
 
-		for (int j = size - 1; j >= 0; j--) {
+		for (size_t j = size - 1; j >= 0; j--) {
 			digit = str[j] - '0';
 			if (digit >= 0 && digit <= 9)
 				break;
@@ -66,12 +66,12 @@ int solution_1(const string& input) {
 int solution_2(const string& input) {
 	vector<string> vec = splitString(input, '\n');
 	int sum = 0;
-	int vecSize = vec.size();
-	for (int i = 0; i < vecSize; i++) {
+	size_t vecSize = vec.size();
+	for (size_t i = 0; i < vecSize; i++) {
 		const string& str = vec[i];
-		int size = str.size();
+		size_t size = str.size();
 		int digit = 0;
-		for (int j = 0; j < size; j++) {
+		for (size_t j = 0; j < size; j++) {
 			digit = str[j] - '0';
 			if (digit >= 0 && digit <= 9)
 				break;
@@ -83,7 +83,7 @@ int solution_2(const string& input) {
 		int tens = digit * 10;
 		fill(progress, progress + NUMBER_STRING_ARR_SIZE, 0);
 
-		for (int j = size - 1; j >= 0; j--) {
+		for (size_t j = size - 1; j >= 0; j--) {
 			digit = str[j] - '0';
 			if (digit >= 0 && digit <= 9)
 				break;

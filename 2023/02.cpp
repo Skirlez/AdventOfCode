@@ -6,9 +6,9 @@ using namespace std;
 
 int maxColors[3] = {12, 13, 14}; // r, g, b
 
-int gameFindColon(const char* str) {
+size_t gameFindColon(const char* str) {
 	// find the colon ':'
-	int j = 4; // 4/5 is a safe start position
+	size_t j = 4; // 4/5 is a safe start position
 	char c;
 	do {
 		j++;
@@ -20,7 +20,7 @@ int gameFindColon(const char* str) {
 }
 
 /* Read the number at position j and progress to the next color char */
-int gameReadNumberAndProgress(const char* str, int &j) {
+int gameReadNumberAndProgress(const char* str, size_t& j) {
 	// there are either 1 or 2 digits
 	int digit_1 = str[j] - '0';
 	int digit_2 = str[j + 1] - '0';
@@ -36,7 +36,7 @@ int gameReadNumberAndProgress(const char* str, int &j) {
  We have to jump a different amount forward because the color names are of different lengths,
  so jumpOffsets contains what we need */
 int jumpOffsets[3] = {5, 7, 6}; // r, g, b
-int gameReadColorIndexAndProgress(const char* str, int &j) {
+int gameReadColorIndexAndProgress(const char* str, size_t& j) {
 	char color = str[j];
 	int ind;
 	if (color == 'r')
@@ -50,8 +50,8 @@ int gameReadColorIndexAndProgress(const char* str, int &j) {
 }
 
 
-inline bool isGamePossible(const char* str, int strLength) {
-	int j = gameFindColon(str);
+inline bool isGamePossible(const char* str, size_t strLength) {
+	size_t j = gameFindColon(str);
 	do {
 		int num = gameReadNumberAndProgress(str, j);
 		int ind = gameReadColorIndexAndProgress(str, j);
@@ -64,19 +64,19 @@ inline bool isGamePossible(const char* str, int strLength) {
 
 int solution_1(const string& input) {
 	vector<string> vec = splitString(input, '\n');
-	int size = vec.size();
+	size_t size = vec.size();
 	int sum = 0;
-	for (int i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		if (isGamePossible(vec[i].c_str(), vec[i].size()))
 			sum += (i + 1);
 	}
 	return sum;
 }
 
-inline int powerOfMinimumCubesForGame(const char* str, int strLength) {
+inline int powerOfMinimumCubesForGame(const char* str, size_t strLength) {
 	int minColors[3] = {0, 0, 0}; // r, g, b
 
-	int j = gameFindColon(str);
+	size_t j = gameFindColon(str);
 	do {
 		int num = gameReadNumberAndProgress(str, j);
 		int ind = gameReadColorIndexAndProgress(str, j);
@@ -90,9 +90,9 @@ inline int powerOfMinimumCubesForGame(const char* str, int strLength) {
 
 int solution_2(const string& input) {
 	vector<string> vec = splitString(input, '\n');
-	int size = vec.size();
+	size_t size = vec.size();
 	int sum = 0;
-	for (int i = 0; i < size; i++)
+	for (size_t i = 0; i < size; i++)
 		sum += powerOfMinimumCubesForGame(vec[i].c_str(), vec[i].size());
 	return sum;
 }

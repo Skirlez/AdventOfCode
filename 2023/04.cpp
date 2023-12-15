@@ -4,7 +4,7 @@
 using namespace std;
 
 inline bool isNumberInVector(int num, const vector<int>& vec) {
-	for (int i = 0; i < vec.size(); i++) {
+	for (size_t i = 0; i < vec.size(); i++) {
 		if (num == vec[i])
 			return true;
 	}
@@ -13,14 +13,14 @@ inline bool isNumberInVector(int num, const vector<int>& vec) {
 
 int solution_1(const string& input) {
 	vector<string> cards = splitString(input, '\n');
-	int size = cards.size();
+	size_t size = cards.size();
 	int sum = 0;
-	for (int i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		const char* str = cards[i].c_str();
-		int stringSize = cards[i].size();
+		size_t stringSize = cards[i].size();
 
 		// the starting colon is always in position 8, and we jump 2 to get to the first number
-		int j = 8 + 2;
+		size_t j = 8 + 2;
 
 		vector<int> winningNumbers = vector<int>();
 		while (true) {
@@ -60,17 +60,17 @@ int solution_1(const string& input) {
 
 int solution_2(const string& input) {
 	vector<string> cards = splitString(input, '\n');
-	int size = cards.size();
+	size_t size = cards.size();
 	int cardCounts[size];
 	fill(cardCounts, cardCounts + size, 1); // set all values of the array to 1
 	int sum = size;
 
-	for (int i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		const char* str = cards[i].c_str();
-		int stringSize = cards[i].size();
+		size_t stringSize = cards[i].size();
 
 		// the starting colon is always in position 8, and we jump 2 to get to the first number
-		int j = 8 + 2;
+		size_t j = 8 + 2;
 
 		vector<int> winningNumbers = vector<int>();
 		while (true) {

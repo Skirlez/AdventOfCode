@@ -25,15 +25,6 @@ vector<string> splitString(const string& str, char splitter) {
 }
 
 
-int isNumber(string str) {
-	for (int i = 0; i < str.size(); i++) {
-		int digit = str[i] - '0';
-		if (digit > 9 || digit < 0)
-			return false;
-	}
-	return str.size() != 0;
-}
-
 int stringToInt(string str) {
 	int num = 0;
 	int multiplier = 1;
