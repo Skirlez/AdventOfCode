@@ -2,7 +2,7 @@
 
 
 #include <iostream>
-#include <tuple>
+#include <array>
 #include "Util.h"
 using namespace std;
 
@@ -44,7 +44,7 @@ template<bool Ultra> inline bool nodeInNodeVector(Node* node, vector<Node*>& vec
 
 const int cardinalDirections[8] = {1, 0, 0, 1, -1, 0, 0, -1};
 template<bool Ultra> void registerNeighbors(vector<string>& lines, Node& node, 
-		const size_t& xEnd, const size_t yEnd, vector<Node*>& nodes, vector<vector<vector<Node*>>>& allNodes) {
+		const size_t& xEnd, const size_t yEnd, vector<Node*>& nodes, vector<vector<array<vector<Node*>, 4>>>& allNodes) {
 	
 	const int sameDirMax = (Ultra) ? 10 : 3;
 	for (int i = 0; i < 8; i += 2) {
@@ -77,12 +77,12 @@ template<bool Ultra> void registerNeighbors(vector<string>& lines, Node& node,
 
 		Node* newNode = new Node { fCost, x, y, i, sameDir, &node};
 		
-		if (nodeInNodeVector<Ultra>(newNode, allNodes[y][x])) {
+		if (nodeInNodeVector<Ultra>(newNode, allNodes[y][x][i >> 1])) {
 			delete newNode;
 			continue;
 		}
 
-		allNodes[y][x].push_back(newNode);
+		allNodes[y][x][i >> 1].push_back(newNode);
 		registerNode(newNode, nodes);
 	}
 }
@@ -95,8 +95,11 @@ template<bool Ultra> int sharedSolution(const string& input) {
 	vector<string> copy = lines;
 	size_t linesAmount = lines.size();
 
-	vector<vector<vector<Node*>>> allNodes 
-		= vector<vector<vector<Node*>>>(linesAmount, vector<vector<Node*>>(lineLength));
+	const int dirAmount = 4;
+
+	// save me
+	vector<vector<array<vector<Node*>, dirAmount>>> allNodes 
+		= vector<vector<array<vector<Node*>, dirAmount>>>(linesAmount, vector<array<vector<Node*>, dirAmount>>(lineLength));
 	
 	vector<Node*> nodes;
 
@@ -110,7 +113,7 @@ template<bool Ultra> int sharedSolution(const string& input) {
 		nodes.pop_back();
 		//cout << '(' << node->x << ", " << node->y << ") - " << node->fCost << "! ";
 
-		if (node->x == xEnd && node->y == yEnd && (Ultra && node->sameDir >= 3 || !Ultra))
+		if (node->x == xEnd && node->y == yEnd && ((Ultra && node->sameDir >= 3) || !Ultra))
 			break;
 		
 		registerNeighbors<Ultra>(lines, *node, xEnd, yEnd, nodes, allNodes);
@@ -137,8 +140,11 @@ template<bool Ultra> int sharedSolution(const string& input) {
 
 	for (size_t x = 0; x < allNodes.size(); x++) {
 		for (size_t y = 0; y < allNodes[x].size(); y++) {
-			for (size_t z = 0; z < allNodes[x][y].size(); z++)
-				delete allNodes[x][y][z];
+			for (size_t z = 0; z < dirAmount; z++) {
+				for (size_t w = 0; w < allNodes[x][y][z].size(); w++)
+					delete allNodes[x][y][z][w];
+				
+			}
 		}
 	}
 
