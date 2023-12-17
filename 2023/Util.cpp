@@ -5,6 +5,28 @@
 #include <sstream>
 using namespace std;
 
+
+vector<string> splitRectangularString(const string& str, const size_t& lineLength) {
+	vector<string> vec = vector<string>();
+	vec.reserve(str.size() / lineLength);
+
+	int last = 0;
+	int size = str.size();
+	int i;
+	for (i = 0; i < size; i++) {
+		if (str[i] == '\n') {
+			vec.push_back(str.substr(last, i - last));
+			last = i + 1;
+		}
+	}
+	string leftover = str.substr(last, i - last);
+	if (!leftover.empty())
+		vec.push_back(str.substr(last, i - last));
+
+	return vec;
+}
+
+
 vector<string> splitString(const string& str, char splitter) {
 	vector<string> vec = vector<string>();
 

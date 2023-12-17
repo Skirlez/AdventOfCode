@@ -3,6 +3,7 @@
 
 
 using namespace std;
+vector<string> splitRectangularString(const string& str, const size_t& lineLength);
 vector<string> splitString(const string& str, char splitter);
 int isNumber(string str);
 int stringToInt(string str);
