@@ -23,5 +23,3 @@ int main(int argc, char* argv[]) {
 	//timeFunctionAndPrint(solution_2, input, 10000);
 	return 0;
 }
-
-
