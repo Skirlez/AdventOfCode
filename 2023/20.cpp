@@ -42,8 +42,28 @@ inline void addToQueueAndProgress(Module* sender, Module** modules, PulseType pu
 	}
 }
 
-
 inline void sendPulse(Module* target, Module* sender, Module** modules, vector<uint16_t>** inputMap,
+			PulseType pulseType, Node*& end) {
+	if (target->type == 0) {
+		if (pulseType == PulseType::HIGH)
+			return;
+		target->state = !target->state;
+		addToQueueAndProgress(target, modules, static_cast<PulseType>(target->state), end);
+		return;
+	}
+	//else (module->type == 1) {
+	vector<uint16_t>& vec = *inputMap[target->name];
+	int32_t i = 0;
+	int32_t size = vec.size();
+	while (i < size && vec[i] != sender->name) 
+		i++;
+	target->state &= ~(1 << i);
+	target->state |= (((uint32_t)pulseType) << i);
+	int ind = !((target->state & ((1 << size) - 1)) == ((1 << size) - 1));
+	addToQueueAndProgress(target, modules, static_cast<PulseType>(ind), end);
+}
+
+inline void sendPulseAndSum(Module* target, Module* sender, Module** modules, vector<uint16_t>** inputMap,
 			PulseType pulseType, size_t* sums, Node*& end) {
 	if (target->type == 0) {
 		if (pulseType == PulseType::HIGH)
@@ -62,29 +82,16 @@ inline void sendPulse(Module* target, Module* sender, Module** modules, vector<u
 		i++;
 	target->state &= ~(1 << i);
 	target->state |= (((uint32_t)pulseType) << i);
-	int ind = !((target->state & ((1 << size) - 1)) == ((1 << size) - 1));
+	int ind = !((target->state & ((1 << size) - 1)) == ((1 << size) - 1)); // if false if all the bits are set, true otherwise.
 	addToQueueAndProgress(target, modules, static_cast<PulseType>(ind), end);
 	sums[ind] += target->destinationsAmount;
 }
 
 
-int solution_1(const string& input) {
-	const uint16_t max = (('z' - 'a') << 5 | ('z' - 'a'));
-	Module* modules[max + 1];
-	fill(modules, modules + max + 1, nullptr);
-
-
-	vector<uint16_t>* inputMap[max + 1];
-	fill(inputMap, inputMap + max + 1, nullptr);
-
-	vector<vector<uint16_t>*> vectorTracker;
-	vector<Module*> moduleTracker;
-
-	const char* str = input.c_str();
-	size_t size = input.size();
-	size_t pos = 0;
+inline Module* parseModules(const char* str, size_t size, Module** modules, vector<uint16_t>** inputMap, vector<Module*>& moduleTracker, vector<vector<uint16_t>*>& vectorTracker) {
 	Module* broadcaster = new Module { 0, -1 };
 	moduleTracker.push_back(broadcaster);
+	size_t pos = 0;
 	while (pos < size) {
 		Module* module;
 		if ((str[pos] == 'b')) {
@@ -107,8 +114,6 @@ int solution_1(const string& input) {
 		int*& arr = module->destinations;
 
 		pos = start;
-
-
 
 		size_t ind = 0;
 		while (pos < end) {
@@ -135,6 +140,25 @@ int solution_1(const string& input) {
 		if (module != broadcaster)
 			modules[module->name] = module;
 	}
+	return broadcaster;
+}
+
+const uint16_t modulesMax = (('z' - 'a') << 5 | ('z' - 'a'));
+
+int solution_1(const string& input) {
+	Module* modules[modulesMax + 1];
+	fill(modules, modules + modulesMax + 1, nullptr);
+
+	vector<uint16_t>* inputMap[modulesMax + 1];
+	fill(inputMap, inputMap + modulesMax + 1, nullptr);
+
+	vector<vector<uint16_t>*> vectorTracker;
+	vector<Module*> moduleTracker;
+
+	const char* str = input.c_str();
+	size_t size = input.size();
+
+	Module* broadcaster = parseModules(str, size, modules, inputMap, moduleTracker, vectorTracker);
 	
 	Node* start = new Node {broadcaster, nullptr, PulseType::LOW, nullptr};
 	Node* endBroadcaster = start;
@@ -145,7 +169,7 @@ int solution_1(const string& input) {
 		Node* end = endBroadcaster;
 		Node* node = start->next;
 		while (node != nullptr) {
-			sendPulse(node->target, node->sender, modules, inputMap, node->pulseType, sums, end);
+			sendPulseAndSum(node->target, node->sender, modules, inputMap, node->pulseType, sums, end);
 			node = node->next;
 		}
 		//cout << '\n';
@@ -166,19 +190,111 @@ int solution_1(const string& input) {
 	return sums[0] * sums[1];
 }
 
-int solution_2(const string& input) {
-	return 0;
+inline uint64_t gcd(uint64_t a, uint64_t b) {
+    while (b != 0) {
+        uint64_t temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+
+const uint16_t rx = (('r' - 'a') << 5 | ('x' - 'a'));
+uint64_t solution_2(const string& input) {
+	Module* modules[modulesMax + 1];
+	fill(modules, modules + modulesMax + 1, nullptr);
+
+	vector<uint16_t>* inputMap[modulesMax + 1];
+	fill(inputMap, inputMap + modulesMax + 1, nullptr);
+
+	vector<vector<uint16_t>*> vectorTracker;
+	vector<Module*> moduleTracker;
+
+	const char* str = input.c_str();
+	size_t size = input.size();
+
+	Module* broadcaster = parseModules(str, size, modules, inputMap, moduleTracker, vectorTracker);
+	
+	uint16_t rxSenderName = 0;
+	for (size_t i = 0; i < moduleTracker.size(); i++) {
+		if (moduleTracker[i]->destinationsAmount == 1 && moduleTracker[i]->destinations[0] == rx) {
+			rxSenderName = moduleTracker[i]->name;
+			break;
+		}
+	}
+
+	// 1. Only conjuction modules send to the (always) conjuction module that sends to rx.
+	// 2. They have a cycle which is always the same
+	// 3. Day 8 came back in more than one way
+
+	// vector keeping track of senders to the sender to rx
+	vector<Module*> senderSenders;
+
+	for (size_t i = 0; i < moduleTracker.size(); i++) {
+		if (moduleTracker[i]->destinationsAmount == 1 && moduleTracker[i]->destinations[0] == rxSenderName)
+			senderSenders.push_back(moduleTracker[i]);
+	}
+	uint64_t cycleLengths[senderSenders.size()];
+	fill(cycleLengths, cycleLengths + senderSenders.size(), 0);
+
+	Node* start = new Node {broadcaster, nullptr, PulseType::LOW, nullptr};
+	Node* endBroadcaster = start;
+	addToQueueAndProgress(broadcaster, modules, PulseType::LOW, endBroadcaster);
+	
+
+	size_t i = 1;
+	unsigned int cyclesFound = 0;
+	while (true) {	
+		Node* end = endBroadcaster;
+		Node* node = start->next;
+		while (node != nullptr) {
+			if (node->pulseType == PulseType::HIGH) {
+				for (size_t j = 0; j < senderSenders.size(); j++) {
+					if (senderSenders[j] == node->sender) {
+						if (cycleLengths[j] == 0)
+							cyclesFound++;
+						cycleLengths[j] = i;
+					}
+				}
+			}
+			sendPulse(node->target, node->sender, modules, inputMap, node->pulseType, end);
+			node = node->next;
+		}
+		if (cyclesFound >= senderSenders.size())
+			break;
+		//cout << '\n';
+		node = endBroadcaster->next;
+		while (node != nullptr) {
+			Node* next = node->next;
+			delete node;
+			node = next;
+		}
+		i++;
+	}
+	delete start;
+
+	for (size_t i = 0; i < vectorTracker.size(); i++)
+		delete vectorTracker[i];
+	for (size_t i = 0; i < moduleTracker.size(); i++) 
+		delete moduleTracker[i];
+
+	uint64_t lcm = cycleLengths[0];
+	for (size_t i = 1; i < senderSenders.size(); i++)
+		lcm *= cycleLengths[i] / gcd(lcm, cycleLengths[i]);
+
+	return lcm;
 }
 
 int main(int argc, char* argv[]) {
 	string input = readInput(20, argv);
 
 	cout << "Part 1: " << solution_1(input) << '\n';
-	timeFunctionAndPrint(solution_1, input, 100);
+	timeFunctionAndPrint(solution_1, input, 1000);
 	
-	//cout << '\n';
+	cout << '\n';
 
-	//cout << "Part 2: " << solution_2(input) << '\n';
-	//timeFunctionAndPrint(solution_2, input, 10000);
+	cout << "Part 2: " << solution_2(input) << '\n';
+	timeFunctionAndPrint((SolutionFunction)solution_2, input, 1000);
 	return 0;
 }
