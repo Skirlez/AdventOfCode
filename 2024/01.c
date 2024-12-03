@@ -9,22 +9,25 @@ int compare(const void *a, const void *b) {
 	return (*(int*)a - *(int*)b);
 }
 
-inline void parse_to_lists(const string input, size_t lineLength, int* list_1, int* list_2) {
+static inline void parse_to_lists(const string input, size_t lineLength, int* list_1, int* list_2) {
 	int line = 0;
 	const char* str = input.content;
-	for (size_t i = 0; i < input.size; i += lineLength) {
-		size_t j = i + lineLength - 2;
+	for (int i = 0; i < input.size; i += lineLength) {
+		int j = i + lineLength - 2;
 		int multiplier = 1;
 		int number_2 = 0;
-		for (int k = 0; k < 5; k++) {
+		while (str[j] != ' ') {
 			number_2 += (str[j] - '0') * multiplier;
 			multiplier *= 10;
 			j--;
 		}
+
+		while (str[j] == ' ')
+			j--;
 		multiplier = 1;
 		int number_1 = 0;
-		j -= 3; // skip over 3 spaces
-		for (int k = 0; k < 5; k++) {
+		
+		while (j >= i) {
 			number_1 += (str[j] - '0') * multiplier;
 			multiplier *= 10;
 			j--;
@@ -117,7 +120,7 @@ int solution_2(const string input) {
 		int middle = (low + high) / 2;
 		if (list_2[middle] == number) {
 			middle--;
-			while (middle > 0 && list_2[middle] == number) 
+			while (middle >= 0 && list_2[middle] == number) 
 				middle--;
 			middle++;
 			while (list_2[middle] == number) {
