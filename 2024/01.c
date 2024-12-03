@@ -73,6 +73,7 @@ int solution_1(const string input) {
 
 // There's maybe a possibility of using the fact that the lists are probably very similar when sorted 
 // (a number in index i in list 1 is going to find the numbers equal to it in list 2 somewhere close to index i)
+// But for now it seems the overhead of sorting is too big.
 
 int solution_2(const string input) {
 	const char* str = input.content;
@@ -91,7 +92,7 @@ int solution_2(const string input) {
 
 	parse_to_lists(input, lineLength, list_1, list_2);
 
-	qsort(list_1, lines, sizeof(int), compare);
+	//qsort(list_1, lines, sizeof(int), compare);
 	qsort(list_2, lines, sizeof(int), compare);
 	
 	int sum = 0;

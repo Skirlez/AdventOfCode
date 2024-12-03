@@ -19,7 +19,7 @@ To run: I usually build with GCC, C17, compiling both the .c of the day, Util.c 
 Timings on my CPU (Ryzen 7 3700X): 
 |Day|Part 1 (μs)|Part 2 (μs)|Notes|
 |-|-|-|-|
-|01|105|134||
+|01|105|87||
 
 Give or take 10 μs for results above 200 μs.
 
