@@ -225,8 +225,8 @@ uint64_t solution_2(const string& input) {
 	}
 
 	// 1. Only conjuction modules send to the (always) conjuction module that sends to rx.
-	// 2. They have a cycle which is always the same
-	// 3. Day 8 came back in more than one way
+	// 2. They all have a consistent cycle where they send Kow a lot, then High one time
+	// 3. Day 8 came back in more than one way (finding the LCM of all the cycle lengths)
 
 	// vector keeping track of senders to the sender to rx
 	vector<Module*> senderSenders;

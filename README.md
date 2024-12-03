@@ -1,4 +1,4 @@
-My solutions for Advent of Code. Contains 2023 as of now, the entirety of which is written in C++.
+My solutions for Advent of Code. 2023 is unfinished, and solutions are written in C++. 2024 solutions written in C.
 As my timezone does not allow me to participate in the leaderboards, I have taken upon a different challenge: All solutions are written to be as performant as possible, at all costs. 
 (They are then awkwardly modified to be less ugly, sacrificing like 1 or 2 microseconds for readability and size)
 
@@ -11,7 +11,7 @@ The functions will always recieve the input as a string, and how they parse it w
 Reading the file from disk is done outside of the solution functions on purpose, and the time it takes is not counted.
 
 Solution functions cannot do input file specific optimizations, like storing the position of a character without reading the string,
-or storing the width of the input (distance to newline) without parsing the string. They are made to be general, and should work with everyone's inputs and example inputs.
+or storing the width of the input (distance to newline) without parsing the string. They are made to be general, and should work with everyone's inputs and example inputs (unless supporting the example would hurt performance, see 2023 Day 20).
 
 They also cannot use any information/properties that aren't explicity given, unless the property being exploited is intentionally and sneakily inserted into all input files (see 2023 Day 8 Part 2).
 
