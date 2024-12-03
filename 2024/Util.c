@@ -74,3 +74,4 @@ const	string read_input(int day, char* argv[]) {
 
 	return str;
 }
+
