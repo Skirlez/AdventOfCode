@@ -69,7 +69,7 @@ static inline int* convert_line_to_array(char* str, int start, int* out_size) {
 		number_amount += (str[i] == ' ');
 		i++;
 	}
-	int* arr = (int*)malloc(number_amount * sizeof(int));
+	int* arr = malloc(number_amount * sizeof(int));
 	i = start;
 	int number_index = 0;
 	while (number_index < number_amount) {
@@ -113,7 +113,7 @@ static inline int is_line_valid_tolerant(char* str, int start) {
 		if (new_direction != direction || arr[i] == arr[i + 1] || abs(arr[i] - arr[i + 1]) > 3) {
 			// This sequence is unsafe. Try removing this index or the index after.
 
-			int* arr_1 = (int*)malloc((size - 1) * sizeof(int));
+			int* arr_1 = malloc((size - 1) * sizeof(int));
 			copy_array_from_array_except(arr_1, arr, size, i);
 			int value_1 = is_line_valid_array(arr_1, size - 1);
 			free(arr_1);
@@ -121,7 +121,7 @@ static inline int is_line_valid_tolerant(char* str, int start) {
 				free(arr);
 				return 1;
 			}
-			int* arr_2 = (int*)malloc((size - 1) * sizeof(int));
+			int* arr_2 = malloc((size - 1) * sizeof(int));
 			copy_array_from_array_except(arr_2, arr, size, i + 1);
 			int value_2 = is_line_valid_array(arr_2, size - 1);
 			free(arr_2);
@@ -145,7 +145,7 @@ static inline int is_line_valid_tolerant(char* str, int start) {
 				return 1;
 			}
 
-			int* arr_3 = (int*)malloc((size - 1) * sizeof(int));
+			int* arr_3 = malloc((size - 1) * sizeof(int));
 			copy_array_from_array_except(arr_3, arr, size, 0);
 			int value_3 = is_line_valid_array(arr_3, size - 1);
 			free(arr_3);

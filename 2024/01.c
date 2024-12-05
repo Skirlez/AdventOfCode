@@ -44,8 +44,8 @@ int solution_1(const string input) {
 	size_t lineLength = first_occurrence_of_char(str, '\n') + 1;
 	const size_t lines = input.size / lineLength;
 
-	int* list_1 = (int*)malloc(lines * sizeof(int));
-	int* list_2 = (int*)malloc(lines * sizeof(int));
+	int* list_1 = malloc(lines * sizeof(int));
+	int* list_2 = malloc(lines * sizeof(int));
 
 	parse_to_lists(input, lineLength, list_1, list_2);
 
@@ -75,8 +75,8 @@ int solution_2(const string input) {
 	size_t lineLength = first_occurrence_of_char(str, '\n') + 1;
 	const size_t lines = input.size / lineLength;
 
-	int* list_1 = (int*)malloc(lines * sizeof(int));
-	int* list_2 = (int*)malloc(lines * sizeof(int));
+	int* list_1 = malloc(lines * sizeof(int));
+	int* list_2 = malloc(lines * sizeof(int));
 
 	parse_to_lists(input, lineLength, list_1, list_2);
 

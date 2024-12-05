@@ -23,6 +23,7 @@ Timings on my CPU (Ryzen 7 3700X):
 |02|26|150| Makes an assumption that might not be true for all inputs - potentially 180μs |
 |03|12|12||
 |04|199|67||
+|05|9|39||
 
 Give or take 10 μs for results above 200 μs.
 

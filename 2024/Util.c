@@ -31,7 +31,7 @@ void time_function_and_print(SolutionFunction func, string input, const int iter
 	}
 }
 
-const	string read_input(int day, char* argv[]) {
+const string read_input(int day, char* argv[]) {
 	char filename[7];
 	if (day < 10)
 		sprintf(filename, "0%d.txt", day);
@@ -52,7 +52,7 @@ const	string read_input(int day, char* argv[]) {
 	long file_byte_size = ftell(file);
 	rewind(file);
 
-	char *input = (char*)malloc(file_byte_size);
+	char *input = malloc(file_byte_size);
 	size_t file_size = fread(input, 1, file_byte_size, file);
 	fclose(file);
 	// idiot proof
@@ -66,7 +66,7 @@ const	string read_input(int day, char* argv[]) {
 	
 	// and add a newline
 	file_size++;	
-	input = (char*)realloc(input, file_size + 1);
+	input = realloc(input, file_size + 1);
 	input[file_size - 1] = '\n';
 	input[file_size] = '\0';
 	
