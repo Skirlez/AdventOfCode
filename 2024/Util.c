@@ -2,6 +2,7 @@
 #include "epoch.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
 #include <string.h>
 #include <time.h>
 
@@ -11,23 +12,28 @@ void init_timing() {
 }
 
 double time_function(SolutionFunction func, string input, const int iterations) {
+	double best_run = DBL_MAX;
 	Epoch_t timer;
 	Epoch__Start(&timer);
 	for (int i = 0; i < iterations; i++) {
+		Epoch__Start(&timer);
 		func(input);
+		double run = Epoch__QueryChange(&timer);
+		if (run < best_run)
+			best_run = run;
 	}
-	return Epoch__QueryChange(&timer) / iterations;
+	return best_run;
 }
 
 void time_function_and_print(SolutionFunction func, string input, const int iterations) {
 	printf("Timing function (running %d iterations...)\n", iterations); 
 	double executionTime = time_function(func, input, iterations);
-	printf("The function took %lld microseconds to run on average from %d iterations.\n", (unsigned long long)(executionTime * 1000000.0), iterations);
+	printf("Best run out of %d iterations: %lld microseconds\n", iterations, (unsigned long long)(executionTime * 1000000.0));
 
 	if (executionTime != 0) {
 		#define blinkTime 0.001
 		double runs = blinkTime / executionTime;
-		printf("The smallest accepted average duration for blinking is 100 milliseconds. The function would run %f times in one blink.\n", runs);
+		printf("Blinking takes roughly 100 milliseconds. The function would run %f times in one blink.\n", runs);
 	}
 }
 
