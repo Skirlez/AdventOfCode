@@ -41,35 +41,32 @@ int solution_1(const string input) {
 	return count;
 }
 
-
-
-
 int solution_2(const string input) {
 	char* str = input.content;
-
-	uint8_t* placed_obstacles_map = calloc(input.size + 1, sizeof(uint8_t));
 
 	int line_length = first_occurrence_of_char(str, '\n') + 1;
 	int pos = first_occurrence_of_char(str, '^');
 	int direction = 1;
 	int start = pos;
 
-
 	str[pos] = '.';
 
 	pos = start;
 	direction = 1;
 
+	// this map will store, for each position, whether or not we have already been there while facing a direction.
+	// it will do this by setting the bit with the index of the direction to 1
 	uint8_t* been_here_map = calloc(input.size, sizeof(uint8_t));
 
+	// this map does the same thing but only while we're simulating an obstacle, and additions to it are temporary only to
+	// that specific simulation of the obstacle at that position.
+	uint8_t* simulate_been_here_map = calloc(input.size, sizeof(uint8_t));
 
 	int count = 0;
-	//time = 1;
 	while (1) {
 		int next_pos = pos + round_cos(direction) + round_sin(direction) * line_length;
 		if (next_pos < 0 || next_pos >= input.size || str[next_pos] == '\n')
 			break;
-		//time++;
 		if (str[next_pos] == '#') {
 			direction--;
 			if (direction == -1)
@@ -77,52 +74,55 @@ int solution_2(const string input) {
 			continue;
 		}
 		else {
-			// if we placed an obstacle in front of us
-			int keep_direction = direction;
-			int keep_next_pos = next_pos;
-			str[keep_next_pos] = '#';
-			
-			direction = 1;
-			pos = start;
-
-			while (1) {
-				next_pos = pos + round_cos(direction) + round_sin(direction) * line_length;
-				if (next_pos < 0 || next_pos >= input.size || str[next_pos] == '\n')
-					break;
-				if (str[next_pos] == '#') {
-					direction--;
-					if (direction == -1)
-						direction = 3;
-					continue;
-				}
-				else {
-					uint8_t been_here = been_here_map[next_pos];
-					if ((been_here >> direction) & 1) {
-						if (placed_obstacles_map[keep_next_pos] != 1) {
-							count++;
-							placed_obstacles_map[keep_next_pos] = 1;
-						}
-						break;
-					}
-					been_here_map[next_pos] |= (1 << direction);
-				}
-				pos = next_pos;
+			uint8_t been_here = been_here_map[next_pos];
+			been_here_map[next_pos] |= (1 << direction);
+			if (been_here != 0) {
+				// we have been to this tile before - meaning we already simulated this obstacle
 			}
-			
-			str[keep_next_pos] = '.';
-			
-			//time = keep_time;
+			else {
+				memcpy(simulate_been_here_map, been_here_map, input.size * sizeof(uint8_t));
+				
+				// simulate what would happen if an obstacle was here
+				int keep_direction = direction;
+				int keep_next_pos = next_pos;
+				str[keep_next_pos] = '#';
+		
+				direction--;
+				if (direction == -1)
+					direction = 3;
 
-			next_pos = keep_next_pos;
-			direction = keep_direction;
-			
-			memset(been_here_map, 0, input.size * sizeof(uint8_t));
+				while (1) {
+					next_pos = pos + round_cos(direction) + round_sin(direction) * line_length;
+					if (next_pos < 0 || next_pos >= input.size || str[next_pos] == '\n')
+						break; // we've made it out of the lab, so no loop
+					if (str[next_pos] == '#') {
+						direction--;
+						if (direction == -1)
+							direction = 3;
+						continue;
+					}
+					else {
+						if ((simulate_been_here_map[next_pos] >> direction) & 1) {
+							// we made it into a square we've been to already, in a direction we already were - meaning a loop
+							count++;
+							break;
+						}
+						simulate_been_here_map[next_pos] |= (1 << direction);
+					}
+					pos = next_pos;
+				}
+				
+				str[keep_next_pos] = '.';
+				next_pos = keep_next_pos;
+				direction = keep_direction;
+			}
 		}
 		pos = next_pos;
 	}
 
 	str[start] = '^';
 	free(been_here_map);
+	free(simulate_been_here_map);
 	return count;
 }
 

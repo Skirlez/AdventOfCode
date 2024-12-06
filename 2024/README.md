@@ -20,11 +20,11 @@ Timings on my CPU (Ryzen 7 3700X):
 |Day|Part 1 (μs)|Part 2 (μs)|Notes|
 |-|-|-|-|
 |01|112|93||
-|02|26|150| Makes an assumption that might not be true for all inputs - potentially 180μs |
+|02|26|150| Makes an assumption that might not be true for all inputs - Part 2 potentially 180μs |
 |03|12|12||
 |04|199|67||
 |05|9|39||
-|06|7|TBD||
+|06|7|7000||
 
 Give or take 10 μs for results above 200 μs.
 
