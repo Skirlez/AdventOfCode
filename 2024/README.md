@@ -24,6 +24,7 @@ Timings on my CPU (Ryzen 7 3700X):
 |03|12|12||
 |04|199|67||
 |05|9|39||
+|06|7|TBD||
 
 Give or take 10 μs for results above 200 μs.
 
