@@ -31,9 +31,9 @@ void time_function_and_print(SolutionFunction func, string input, const int iter
 	printf("Best run out of %d iterations: %lld microseconds\n", iterations, (unsigned long long)(executionTime * 1000000.0));
 
 	if (executionTime != 0) {
-		#define blinkTime 0.001
+		#define blinkTime 0.1
 		double runs = blinkTime / executionTime;
-		printf("Blinking takes roughly 100 milliseconds. The function would run %f times in one blink.\n", runs);
+		printf("Blinking takes roughly 100 milliseconds. The function would run %d times in one blink.\n", (int)runs);
 	}
 }
 
