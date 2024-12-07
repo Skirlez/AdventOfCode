@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "Util.h"
 
-
+// Very proud of the part 2 solution. It's a bit complicated, so I left a lot of comments. I hope it's readable.
 
 int solution_1(const string input) {
 	char* str = input.content;
@@ -32,6 +32,15 @@ int solution_1(const string input) {
 		pos = next_pos;
 	}
 	return count;
+}
+
+static inline int add_value_to_sorted_array(int value, int* arr, int size) {
+	int i = 0;
+	while (i < size && arr[i] < value)
+		i++;
+	memmove(&arr[i + 1], &arr[i], (size - i) * sizeof(int));
+	arr[i] = value;
+	return i;
 }
 
 int solution_2(const string input) {
@@ -98,9 +107,6 @@ int solution_2(const string input) {
 		}
 	}
 
-
-
-
 	int cos_table[] = {1, 0, -1, 0};
 	int sin_table[] = {0, -1, 0, 1};
 	int sin_line_table[] = {0, -line_length, 0, line_length};
@@ -113,7 +119,7 @@ int solution_2(const string input) {
 		int next_pos = pos + cos_table[direction] + sin_line_table[direction];
 		int next_x = x + cos_table[direction];
 		int next_y = y + sin_table[direction];
-		if (next_pos < 0 || next_pos >= input.size || str[next_pos] == '\n')
+		if (next_x < 0 || next_y < 0 || next_x >= width || next_y >= height)
 			break;
 		if (str[next_pos] == '#') {
 			int index = next_x + next_y * width;
@@ -132,56 +138,49 @@ int solution_2(const string input) {
 
 			int added_row_index;
 			int added_column_index;
+			
 			// add the obstacle to the arrays
 			{
 				int* row = rows[next_y];
 				int size = row[0];
-				row = &row[1];
-				int i = 0;
-				while (i < size && row[i] < next_x) {
-					i++;
-				}
-				added_row_index = i + 1; // + 1 to adjust for full array
-				memmove(&row[i + 1], &row[i], (size - i) * sizeof(int));
-				row[i] = next_x;
-				row[-1]++;
+				added_row_index = add_value_to_sorted_array(next_x, &row[1], size) + 1;
+				row[0]++;
 			}
 			{
 				int* column = columns[next_x];
 				int size = column[0];
-				column = &column[1];
-				int i = 0;
-				while (i < size && column[i] < next_y) {
-					i++;
-				}
-				added_column_index = i + 1;
-				memmove(&column[i + 1], &column[i], (size - i) * sizeof(int));
-				column[i] = next_y;
-				column[-1]++;
+				added_column_index = add_value_to_sorted_array(next_y, &column[1], size) + 1;
+				column[0]++;
 			}
 
 			direction = (direction - 1) & 3;
-			
+
+			int** obstacles_for_direction[] = {rows, columns, rows, columns};
+			int position_delta_for_direction[] = {1, -1, -1, 1};
+			int* axis_per_direction[] = {&x, &y, &x, &y};
 			while (1) {
-				int** obstacles_for_direction[] = {rows, columns, rows, columns};
+				
 				int** obstacles_axis = obstacles_for_direction[direction];
-				// downwards (direction 3) is considered forwards in this case
-				int forward_or_backwards_for_direction[] = {1, -1, -1, 1};
+				int position_delta = position_delta_for_direction[direction];
 
-				int forwards = forward_or_backwards_for_direction[direction];
-
-				int* axis_per_direction[] = {&x, &y, &x, &y};
 				int* axis = axis_per_direction[direction]; 
 				int* other_axis = axis_per_direction[(direction + 1) & 3];
 				
+				
 				int* obstacles = obstacles_axis[*other_axis];
+				// obstacles now holds the x or y positions of all the obstacles 
+				// in the line we're currently travelling on. if we're horizontal, 
+				// it'll be the x positions of some row, and if we're vertical, the y positions of some column.
+				// we can now fairly easily find the next obstacle we'll encounter.
+
 				int size = obstacles[0];
 				if (size == 0)
 					break;
+
 				// get only the rest of the array
 				obstacles = &obstacles[1];
 
-				if (forwards == 1) {
+				if (position_delta == 1) {
 					int i = 0;
 					while (i < size && obstacles[i] < *axis)
 						i++;
@@ -199,6 +198,7 @@ int solution_2(const string input) {
 					}
 					*axis = obstacles[i];
 				}
+
 				int index = x + y * width;
 				uint8_t been_here = been_here_map[index];
 				if ((been_here_map[index] >> direction) & 1) {
@@ -213,10 +213,13 @@ int solution_2(const string input) {
 				changes_to_map++;
 
 				// we are currently "inside" the obstacle - take a step back
+				*axis -= position_delta;
+
+				// make the turn
 				direction = (direction - 1) & 3;
-				*axis -= forwards;
 			}
 			// revert all the changes we did to the data structures
+
 			while (changes_to_map != 0) {
 				changes_to_map--;
 				uint32_t change = changes_stack[changes_to_map];
@@ -226,6 +229,7 @@ int solution_2(const string input) {
 				been_here_map[changed_x + changed_y * width] = original_value;
 			}
 
+			// remove the obstacle from the arrays
 			{
 				int* row = rows[next_y];
 				int size = row[0];
@@ -245,6 +249,7 @@ int solution_2(const string input) {
 		y = next_y;
 		pos = next_pos;
 	}
+
 	free(been_here_map);
 	free(changes_stack);
 	for (int i = 0; i < height; i++) {

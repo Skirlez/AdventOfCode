@@ -26,5 +26,6 @@ Timings on my CPU (Ryzen 7 3700X):
 |04|199|67||
 |05|9|39||
 |06|7|1200||
+|07|322|11600||
 
 Solution with longer runtimes tend to deviate more, so give or take a few microseconds for large numbers in this table.
