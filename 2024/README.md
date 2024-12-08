@@ -1,8 +1,8 @@
 ## Performant Advent of Code 2024 solutions written in C
 
-Each file expects to be given a directory which holds "n.txt", the input file for day n, as a console argument.
+Each code file expects to be given a directory which holds "n.txt", the input file for day n, as a console argument.
 
-Each file will print the answer and the average time to solve for both part 1 and 2. Each year folder contains a table with the results.
+Each code file will print the answer and the time to compute the answers for both part 1 and 2. Each year folder contains a table with the results.
 
 Timing the solutions works by running the solution function some amount of times (usually 10,000) and saving the best runtime.
 The functions will always recieve the input as a string, and how they parse it will add to the total time.
@@ -27,5 +27,6 @@ Timings on my CPU (Ryzen 7 3700X):
 |05|9|39||
 |06|7|1200||
 |07|154|253||
+|08|13|14||
 
 Solution with longer runtimes tend to deviate more, so give or take a few microseconds for large numbers in this table.
