@@ -37,7 +37,7 @@ void time_function_and_print(SolutionFunction func, string input, const int iter
 	}
 }
 
-const string read_input(int day, char* argv[]) {
+const string read_input_base(int day, char* argv[]) {
 	char filename[7];
 	if (day < 10)
 		sprintf(filename, "0%d.txt", day);
@@ -69,15 +69,25 @@ const string read_input(int day, char* argv[]) {
 			break;
 		file_size--;
 	}
-	
-	// and add a newline
-	file_size++;	
-	input = realloc(input, file_size + 1);
-	input[file_size - 1] = '\n';
-	input[file_size] = '\0';
-	
+
 	const string str = { input, file_size };
 
 	return str;
 }
 
+
+const string read_input(int day, char* argv[]) {
+	string str = read_input_base(day, argv);
+	
+	// add trailing newline
+	str.size++;	
+	str.content = realloc(str.content, str.size);
+	str.content[str.size - 1] = '\n';
+	str.content[str.size] = '\0';
+	
+	return str;
+}
+
+const string read_input_no_trailing_newline(int day, char* argv[]) {
+	return read_input_base(day, argv);
+}

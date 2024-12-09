@@ -3,7 +3,7 @@
 
 typedef struct {
 	char* content;
-	const long size;
+	long size;
 } string;
 
 typedef int (*SolutionFunction)(string input);
@@ -11,7 +11,7 @@ double time_function(SolutionFunction func, string input, const int iterations);
 void time_function_and_print(SolutionFunction func, string input, const int iterations); 
 void init_timing();
 const string read_input(int day, char* argv[]);
-
+const string read_input_no_trailing_newline(int day, char* argv[]);
 // returns first index of the char `ch`, starting from `index`. assumes `ch` exists
 static inline size_t first_occurrence_of_char_offset(const char* str, size_t index, const char ch) {
 	while (str[index] != ch)
