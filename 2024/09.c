@@ -61,7 +61,7 @@ uint64_t solution_1(const string input) {
 
 void print_unpacked_str(int16_t* unpacked_str, int length) {
 	for (int i = 0; i < length; i++) {
-		if (unpacked_str[i] == -1)
+		if (unpacked_str[i] < 0)
 			printf(".");
 		else
 			printf("%d", unpacked_str[i]);
@@ -104,60 +104,61 @@ uint64_t solution_2(const string input) {
 
 	uint64_t checksum = 0;
 
-
-	int last_contiguous_index = 0;
-	int last_index = unpacked_length - 1;
-
-	while (last_index > last_contiguous_index) {
-		int16_t number = unpacked_str[last_index];
-		int count = 1;
-		last_index--;
-		while (unpacked_str[last_index] == number) {
-			count++;
-			last_index--;
-		}
-		// found block we want to move
-		// start of the block we want to move (on the right)
-		int start_right_side = last_index + 1;
-
-		while (unpacked_str[last_contiguous_index + 1] != -1)
-			last_contiguous_index++;
-		int i = last_contiguous_index + 1;
-		while (i < last_index) {
-			int empty_count = 0;
-			// start of the empty space we potentially move to (on the left)
-			int start_left_side = i;
-			while (empty_count < count && unpacked_str[i] == -1) {
-				i++;
-				empty_count++;
-			}
-			if (empty_count == count) {
-				for (int j = 0; j < empty_count; j++) {
-					unpacked_str[start_left_side + j] = number;
-					unpacked_str[start_right_side + j] = -1;
-				}
-				break;
-			}
-			while (unpacked_str[i] != -1)
-				i++;
-		}
-		while (unpacked_str[last_index] == -1)
-			last_index--;
-	}
-
-	
-	int pos = 0;
 	int i = 0;
-	while (i < unpacked_length) {
-		if (unpacked_str[i] != -1) {
+	int last_index = unpacked_length - 1;
+	while (i <= last_index) {
+		while (unpacked_str[i] < -1) {
+			i++;
+		}
+		if (unpacked_str[i] >= 0) {
 			checksum += i * unpacked_str[i];
-			pos++;
+			i++;
+		}
+		else {
+			int empty_start = i;
+			int empty_count = 1;
+			i++;
+			while (unpacked_str[i] == -1) {
+				empty_count++;
+				i++;
+			}
+			int empty_end = empty_start + empty_count - 1;
+			while (unpacked_str[last_index] < 0)
+				last_index--;
+
+			int j = last_index;
+			while (empty_count > 0 && j > empty_end) {
+				int end_number = unpacked_str[j];
+				int end_count = 1;
+				j--;
+				while (unpacked_str[j] == end_number) {
+					end_count++;
+					j--;
+				}
+				int number_start = j + 1;
+				if (end_count <= empty_count) {
+					for (int k = 0; k < end_count; k++) {
+						checksum += (empty_start + k) * end_number;
+						unpacked_str[number_start + k] = -end_number;
+					}
+					empty_count -= end_count;
+					empty_start += end_count;
+					while (unpacked_str[last_index] < 0)
+						last_index--;
+					j = last_index;
+					continue;
+				}
+				while (unpacked_str[j] < 0)
+					j--;
+			}
+		}
+	}
+	while (i <= last_index) {
+		if (unpacked_str[i] > 0) {
+			checksum += i * unpacked_str[i];
 		}
 		i++;
 	}
-	//print_unpacked_str(unpacked_str, unpacked_length);
-	
-
 	return checksum;
 }
 
