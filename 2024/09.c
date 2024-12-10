@@ -5,58 +5,74 @@
 #include "Util.h"
 
 
-uint64_t solution_1(const string input) {
+
+// In this puzzle, we occassionally need to sum a sequence like 77777 by going over each digit and multiplying it by the position.
+// You can do a bit of algebra to avoid the loop entirely.
+// Let n be the number/id (7), p be the position, and the length of the sequence be l (5).
+
+// sum = n * pos + n * (pos + 1) + n * (pos + 2)... + n * (pos + l - 1)
+// = n * (pos + pos + 1 + pos + 2... + pos + l - 1)
+// = n * (l * pos + 1 + 2 ... + l - 1)
+// We can substitute the addition of numbers 1 - l - 1 with the formula for summing up an arithmetic sequence,
+// with l - 1 elements, where a1 = 1, and an = (l - 1)
+// = n * (l * pos + ((1 + l - 1) * (l - 1)) / 2)
+// Simplified:
+// sum = n * (l * pos + (l * (l - 1)) / 2)
+
+// Note: Can also be simplified to:
+// sum = n * l * (pos + (l - 1) / 2)
+// But having (l - 1) / 2 is an issue with integers because l can be 2 which will make this 1 / 2 -> 0.
+// The other form doesn't have this issue, since l * (l - 1) is guaranteed to be even.
+
+// I hope this makes it easier to understand what exactly is being done here.
+
+int64_t solution_1(const string input) {
 	char* str = input.content;
-	int unpacked_length = 0;
-	for (int i = 0; i < input.size; i++) {
-		unpacked_length += (str[i] - '0');
-	}
+	char* copy = malloc(input.size);
+	memcpy(copy, str, input.size);
 
-	int16_t* unpacked_str = malloc(unpacked_length * sizeof(int16_t));
+	int64_t last_id = input.size / 2;
+	int64_t sum = 0;
+	int64_t id = 0;
 
-	int is_block = 1;
-	int16_t id = 0;
-	unpacked_length = 0;
-	for (int i = 0; i < input.size; i++) {
-		int num = (str[i] - '0');
-		if (is_block) {
-			
-			for (int j = 0; j < num; j++) {
-				unpacked_str[unpacked_length] = id;
-				unpacked_length++;
+	int pos = 0;
+	int end = input.size - 1;
+	int i = 0;
+
+	while (i <= end) {
+		int num = (copy[i] - '0');
+		sum += id * (num * pos + (num * (num - 1)) / 2);
+		pos += num;
+		id++;
+
+		i++;
+
+		num = (copy[i] - '0');
+		int amount_needed = num;
+		while (amount_needed > 0 && end > i) {
+			int end_num = (copy[end] - '0');
+			if (end_num <= amount_needed) {
+				sum += last_id * (end_num * pos + (end_num * (end_num - 1)) / 2);
+				end -= 2;
+				amount_needed -= end_num;
+				pos += end_num;
+				last_id--;
 			}
-			id++;
-		}
-		else {
-			for (int j = 0; j < num; j++) {
-				unpacked_str[unpacked_length] = -1;
-				unpacked_length++;
+			else {
+				copy[end] = (end_num - amount_needed + '0');
+				sum += last_id * (amount_needed * pos + (amount_needed * (amount_needed - 1)) / 2);
+				pos += amount_needed;
+				amount_needed = 0;
 			}
 		}
-		is_block = !is_block;
+
+
+		i++;
+
 	}
 
-	uint64_t checksum = 0;
-
-	// instead of modifying the strings to move the file blocks just read from the start and when you get to a '.' read from the end
-	int start = 0;
-	int end = unpacked_length - 1;
-	while (start <= end) {
-		if (unpacked_str[start] != -1) {
-			checksum += start * unpacked_str[start];
-		}
-		else {
-			while (unpacked_str[end] == -1)
-				end--;
-			if (start > end)
-				break;
-			checksum += start * unpacked_str[end];
-			end--;
-		}
-		start++;
-	}
-
-	return checksum;
+	free(copy);
+	return sum;
 }
 
 void print_unpacked_str(int16_t* unpacked_str, int length) {
@@ -166,8 +182,8 @@ int main(int argc, char* argv[]) {
 	init_timing();
 	const string input = read_input_no_trailing_newline(9, argv);
 	
-	printf("Part 1: %llu\n", solution_1(input));
-	time_function_and_print((SolutionFunction)solution_1, input, 1000);
+	printf("Part 1: %lld\n", solution_1(input));
+	time_function_and_print((SolutionFunction)solution_1, input, 10000);
 
 	printf("Part 2: %llu\n", solution_2(input));
 	time_function_and_print((SolutionFunction)solution_2, input, 1000);

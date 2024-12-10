@@ -58,11 +58,11 @@ const string read_input_base(int day, char* argv[]) {
 	long file_byte_size = ftell(file);
 	rewind(file);
 
-	char *input = malloc(file_byte_size);
+	char* input = malloc(file_byte_size + 1);
 	size_t file_size = fread(input, 1, file_byte_size, file);
 	fclose(file);
-	// idiot proof
 
+	input[file_size] = '\0';
 	// remove all trailing newlines
 	for (size_t i = file_size - 1; i > 0; i--) {
 		if (input[i] != '\n')
