@@ -81,7 +81,7 @@ const string read_input(int day, char* argv[]) {
 	
 	// add trailing newline
 	str.size++;	
-	str.content = realloc(str.content, str.size);
+	str.content = realloc(str.content, str.size + 1);
 	str.content[str.size - 1] = '\n';
 	str.content[str.size] = '\0';
 	

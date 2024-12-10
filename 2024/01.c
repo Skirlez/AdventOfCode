@@ -40,7 +40,7 @@ static inline void parse_to_lists(const string input, size_t lineLength, int* li
 
 
 int solution_1(const string input) {
-	const char* str = input.content;
+	char* str = input.content;
 	size_t lineLength = first_occurrence_of_char(str, '\n') + 1;
 	const size_t lines = input.size / lineLength;
 
