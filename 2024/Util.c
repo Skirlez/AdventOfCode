@@ -62,13 +62,14 @@ const string read_input_base(int day, char* argv[]) {
 	size_t file_size = fread(input, 1, file_byte_size, file);
 	fclose(file);
 
-	input[file_size] = '\0';
+	
 	// remove all trailing newlines
 	for (size_t i = file_size - 1; i > 0; i--) {
 		if (input[i] != '\n')
 			break;
 		file_size--;
 	}
+	input[file_size] = '\0';
 
 	const string str = { input, file_size };
 
