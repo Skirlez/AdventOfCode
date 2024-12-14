@@ -15,6 +15,8 @@ number shared_solution(int blinks, const string input) {
 	number* working_array = malloc(allocated_size * sizeof(number));
 	number* counts = malloc(allocated_size * sizeof(number));
 		
+	// Tried caching digits 0-9. This does work but just removing duplicates and not doing this is actually faster for Part 2
+	// Does result in slight improvement for Part 1
 	for (int k = 1; k < 10; k++) {
 		number* results = malloc(blinks * sizeof(number));
 		digits_amounts[k] = results;

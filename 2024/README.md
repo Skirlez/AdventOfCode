@@ -31,5 +31,7 @@ Timings on my CPU (Ryzen 7 3700X):
 |09|24|12886|Part 2 could likely be optimized...|
 |10|22|23||
 |11|545|490588|NOT final! Could be greatly improved with a hash map|
+|12|368|TBD||
+|13|4|5||
 
 Solution with longer runtimes tend to deviate more, so give or take a few microseconds for large numbers in this table.
