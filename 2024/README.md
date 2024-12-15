@@ -33,11 +33,6 @@ Timings on my CPU (Ryzen 7 3700X):
 |11|545|490588|NOT final! Could be greatly improved with a hash map|
 |12|368|TBD||
 |13|4|5||
-|14|4|661|TODO: Verify correctness of part 2 for other inputs|
+|14|4|118|TODO: Verify correctness of part 2 for other inputs|
 
 Solution with longer runtimes tend to deviate more, so give or take a few microseconds for large numbers in this table.
-
-
-257 % 100
-
-57

@@ -107,13 +107,6 @@ int solution_2(const string input) {
 	const int width = 101;
 	const int height = 103;
 	char* str = input.content;
-	int* board = malloc(width * height * sizeof(int));
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			board[j + i * width] = 0;
-		}
-	}
-
 
 	int amount_of_robots = 0;
 	for (int i = 0; i < input.size; i++) {
@@ -142,7 +135,6 @@ int solution_2(const string input) {
 			r.vy = parse_signed_number_until_char(str, &i, '\n');
 			// newline
 			i++;
-			board[r.x + r.y * width]++;
 
 			last_index++;
 			robots[last_index] = r;
@@ -152,58 +144,47 @@ int solution_2(const string input) {
 	int y_cycle = 0;
 	int max_diff_x = 0;
 	int max_diff_y = 0;
+
+	// the third count is used as a dummy
+	int horizontal_counts[] = {0, 0};
+	int vertical_counts[] = {0, 0};
+
 	for (int i = 0; i < 103; i++) {
+		horizontal_counts[0] = 0;
+		horizontal_counts[1] = 0;
 
-
-		int left_count = 0;
-		int right_count = 0;
-		int up_count = 0;
-		int down_count = 0;
+		vertical_counts[0] = 0;
+		vertical_counts[1] = 0;
 		for (int j = 0; j < amount_of_robots; j++) {
 			robot* r = &robots[j];
 
-			if (r->x != width / 2 && r->y != height / 2) {
-				if (r->x < width / 2)
-					left_count++;
-				else
-					right_count++;
+			// just an assumption, but I don't think this matters for this check.
+			//if (r->x != width / 2 && r->y != height / 2) {
+			horizontal_counts[r->x < width / 2]++;
+			vertical_counts[r->y < height / 2]++;
+			//}
 
-				if (r->y < height / 2)
-					up_count++;
-				else
-					down_count++;
-			}
+			r->x = ((r->x + r->vx + width) % width);
+			r->y = ((r->y + r->vy + height) % height);
 
-
-			board[r->x + r->y * width]--;
-			r->x += r->vx;
-			r->y += r->vy;
-			if (r->x < 0)
-				r->x += width;
-			else if (r->x >= width)
-				r->x -= width;
-			if (r->y < 0)
-				r->y += height;
-			else if (r->y >= height)
-				r->y -= height;
 		}
 		if (i < 101) {
-			int diff_x = abs(left_count - right_count);
+			int diff_x = abs(horizontal_counts[1] - horizontal_counts[0]);
 			if (diff_x > max_diff_x) {
 				max_diff_x = diff_x;
 				x_cycle = i;
 			}
 		}
-		int diff_y = abs(up_count - down_count);
+		int diff_y = abs(vertical_counts[1] - vertical_counts[0]);
 		if (diff_y > max_diff_y) {
 			max_diff_y = diff_y;
 			y_cycle = i;
 		}
 
 	}
-	// so we're looking for the smallest number between 0 < n < 10403
-	// that n % 101 == x_cycle
-	// and that n % 103 == y_cycle
+	// we're looking for the smallest number between 0 < n < 10403
+	// where n % 101 == x_cycle
+	// and where n % 103 == y_cycle
 
 	// Since 101 and 103 are coprime we can apply the chinese remainder theorem. But I don't actually know how to do that!
 	// And every time I read about it I still don't understand. So let's do my idea instead.
@@ -211,19 +192,19 @@ int solution_2(const string input) {
 	// f(x) = x_cycle + 101 * x
 	// We're looking for the x where f(x) % 103 == y_cycle.
 
-	// Since this is modular arithmetic, let's see how f changes for every increase in x:
-	int diff = (x_cycle + 101 + 101) % 103 - (x_cycle + 101) % 103;
+	// Since this is modular arithmetic, we know f changes by (101 - 103) every time we increase x (while wrapping around)
+	const int diff = 101 - 103;
 	// And create a set of functions we can work better with:
-	// g(x) = (f(0) + diff * x) + 103k (k is some integer)
+	// g(x) = f(0) + diff * x + 103k
+	// g(x) = x_cycle + diff * x + 103k (k is some integer)
 	// For every one of those lines, there is an x for which a y is equal to y_cycle.
 	// We are looking for the first one where the x is whole. That is our x!
 	
 	// We will find k by bruteforce.
 	// We need to decrease k into negatives if the slope (diff) is positive, or increase if it's negative, otherwise
-	// our x might be negative - though we can do absolute value on it and it gives the correct answer, i don't know why it does.
-	int k_add = diff > 0 ? -1 : 1;
+	// our x might be negative - though we can do absolute value on it and it gives the correct answer, and I don't know why this happens.
+	const int k_add = diff > 0 ? -1 : 1;
 
-	// f(0) + diff * x + 103k = y_cycle
 	// x_cycle + diff*x +103k = y_cycle
 	// diff*x + 103k = y_cycle-x_cycle
 	// diff*x = y_cycle-x_cycle-103k
@@ -235,7 +216,8 @@ int solution_2(const string input) {
 
 	int x = (y_cycle - x_cycle - 103 * k) / diff;
 	int n = x_cycle + 101 * x;
-
+	
+	free(robots);
 	return n;
 }
 
