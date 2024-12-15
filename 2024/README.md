@@ -34,5 +34,6 @@ Timings on my CPU (Ryzen 7 3700X):
 |12|368|TBD||
 |13|4|5||
 |14|4|118|TODO: Verify correctness of part 2 for other inputs|
+|15|81|95||
 
 Solution with longer runtimes tend to deviate more, so give or take a few microseconds for large numbers in this table.

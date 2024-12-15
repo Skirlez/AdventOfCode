@@ -101,9 +101,6 @@ typedef struct  {
 // (we'll do 103 and stop looking at the X axis for the last 2)
 
 int solution_2(const string input) {
-	
-
-
 	const int width = 101;
 	const int height = 103;
 	char* str = input.content;
