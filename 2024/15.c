@@ -79,65 +79,63 @@ static inline bool is_wide_box(char c) {
 	// both '[' and ']' when divided by 8 produce 11 (and none of the other characters we care about do)
 	return (c >> 3 == 11);
 }
-
-bool is_vertical_push_valid(char* str, int box_pos, int push_direction) {
-	int other_pos;
-	if (str[box_pos] == '[')
-		other_pos = box_pos + 1;
-	else
-		other_pos = box_pos - 1;
-	
-	if (str[box_pos + push_direction] == '#' || str[other_pos + push_direction] == '#')
-		return false;
-	if (str[box_pos + push_direction] == '.') {
-		if (str[other_pos + push_direction] == '.')
-			return true;
-		return is_vertical_push_valid(str, other_pos + push_direction, push_direction);
-	}
-	// is this box directly above us
-	if (str[box_pos + push_direction] == str[box_pos]) {
-		return is_vertical_push_valid(str, box_pos + push_direction, push_direction);
-	}
-	// there is a box in our next position, above/below next_pos - check for other_pos
-	if (str[other_pos + push_direction] == '.') {
-		return is_vertical_push_valid(str, box_pos + push_direction, push_direction);
-	}
-	return is_vertical_push_valid(str, box_pos + push_direction, push_direction) 
-		&& is_vertical_push_valid(str, other_pos + push_direction, push_direction);
-	
-}
-
-void push_vertical(char* str, int box_pos, int push_direction) {
-	int right_pos;
-	int left_pos;
-	if (str[box_pos] == ']') {
-		right_pos = box_pos;
-		left_pos = box_pos - 1;
-	}
-	else {
-		left_pos = box_pos;
-		right_pos = box_pos + 1;
-	}
-
+bool is_vertical_push_valid(char* str, int left_pos, int push_direction) {
 	int new_left_pos = left_pos + push_direction;
 
-	// box right in front
+	// ????
+	//  []<-
+
+	if (str[new_left_pos] == '#' || str[new_left_pos + 1] == '#')
+		return false;
+	if (str[new_left_pos] == '.' && str[new_left_pos + 1] == '.')
+		return true;
+
+	// there must be another box above us
+
+	if (str[new_left_pos] == '[') {
+		// []
+		// []<-
+		return is_vertical_push_valid(str, new_left_pos, push_direction);
+	}
+	if (str[new_left_pos] == ']') {
+		// []??
+		//  []<-
+		if (str[new_left_pos + 1] == '[') {
+			// [][]
+			//  []<-
+			return is_vertical_push_valid(str, new_left_pos - 1, push_direction) 
+				&& is_vertical_push_valid(str, new_left_pos + 1, push_direction);
+		}
+		// []
+		//  []<-
+		return is_vertical_push_valid(str, new_left_pos - 1, push_direction);
+	}
+	//  []
+	// []<-
+	return is_vertical_push_valid(str, new_left_pos + 1, push_direction);
+}
+
+// only called if we know these boxes can be pushed
+void push_vertical(char* str, int left_pos, int push_direction) {
+	int new_left_pos = left_pos + push_direction;
+
+	// box directly above/below
 	if (str[new_left_pos] == '[') {
 		push_vertical(str, new_left_pos, push_direction);
 		str[left_pos] = '.';
-		str[right_pos] = '.';
+		str[left_pos + 1] = '.';
 		str[new_left_pos] = '[';
 		str[new_left_pos + 1] = ']';
 		return;
 	}
 	if (str[new_left_pos] == ']') {
-		push_vertical(str, new_left_pos, push_direction);
+		push_vertical(str, new_left_pos - 1, push_direction);
 	}
 	if (str[new_left_pos + 1] == '[') {
 		push_vertical(str, new_left_pos + 1, push_direction);
 	}
 	str[left_pos] = '.';
-	str[right_pos] = '.';
+	str[left_pos + 1] = '.';
 	str[new_left_pos] = '[';
 	str[new_left_pos + 1] = ']';
 }
@@ -248,11 +246,17 @@ int solution_2(const string input) {
 				}
 			}
 			else {
+				
+				int left_pos;
+				if (copy[new_pos] == ']')
+					left_pos = new_pos - 1;
+				else
+					left_pos = new_pos;
 				// vertical pushing is more complex, since it's possible for the robot to push two boxes at once
-				if (!is_vertical_push_valid(copy, new_pos, direction)) {
+				if (!is_vertical_push_valid(copy, left_pos, direction)) {
 					continue;
 				}
-				push_vertical(copy, new_pos, direction);
+				push_vertical(copy, left_pos, direction);
 			}
 		}
 		robot_pos = new_pos;
