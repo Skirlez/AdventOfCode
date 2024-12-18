@@ -12,23 +12,18 @@ void init_timing() {
 }
 
 double time_function(SolutionFunction func, string input, const int iterations) {
-	double best_run = DBL_MAX;
 	Epoch_t timer;
 	Epoch__Start(&timer);
 	for (int i = 0; i < iterations; i++) {
-		Epoch__Start(&timer);
 		func(input);
-		double run = Epoch__QueryChange(&timer);
-		if (run < best_run)
-			best_run = run;
 	}
-	return best_run;
+	return Epoch__QueryChange(&timer) / iterations;
 }
 
 void time_function_and_print(SolutionFunction func, string input, const int iterations) {
 	printf("Timing function (running %d iterations...)\n", iterations); 
 	double executionTime = time_function(func, input, iterations);
-	printf("Best run out of %d iterations: %lld microseconds\n", iterations, (unsigned long long)(executionTime * 1000000.0));
+	printf("Average time out of %d iterations: %lld microseconds\n", iterations, (unsigned long long)(executionTime * 1000000.0));
 
 	if (executionTime != 0) {
 		#define blinkTime 0.1

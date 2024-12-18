@@ -60,6 +60,32 @@ void add_to_queue(priority_queue* queue, node* new_node) {
 	}
 }
 
+void queue_reevaluate_or_add(priority_queue* queue, node* updated_node) {
+	node** arr = queue->arr;
+
+	int f_cost = updated_node->g_cost + updated_node->h_cost;
+
+	int last_index = queue->last_queue_index;
+	int current_index = 0;
+	while (arr[current_index] != updated_node && current_index <= last_index)
+		current_index++;
+
+	if (current_index == last_index + 1) {
+		add_to_queue(queue, updated_node);
+		return;
+	}
+	int parent_index = (current_index - 1) / 2;
+	node* parent = arr[parent_index];
+	while (parent->g_cost + parent->h_cost > f_cost) {
+		arr[current_index] = parent;
+		arr[parent_index] = updated_node;
+
+		current_index = parent_index;
+		parent_index = (current_index - 1) / 2;
+		parent = arr[parent_index];
+	}
+}
+
 node* pop_queue(priority_queue* queue) {
 	if (queue->last_queue_index == -1)
 		return NULL;
@@ -74,14 +100,14 @@ node* pop_queue(priority_queue* queue) {
 	do {
 		int left_index = 2 * current_index + 1;
 		int left_diff = 0;
-		node* left;
+		node* left = NULL;
 		if (left_index <= queue->last_queue_index) {
 			left = arr[left_index];
 			left_diff = f_cost - (left->h_cost + left->g_cost);
 		}
 		int right_index = 2 * current_index + 2;
 		int right_diff = 0;
-		node* right;
+		node* right = NULL;
 		if (right_index <= queue->last_queue_index) {
 			right = arr[right_index];
 
@@ -102,7 +128,6 @@ node* pop_queue(priority_queue* queue) {
 		if (right_diff > 0) {
 			goto right;
 		}
-
 		left:
 			arr[current_index] = left;
 			arr[left_index] = last;
@@ -160,7 +185,6 @@ int solution_1(const string input) {
 
 	add_to_queue(queue, node_map[start_y][start_x]);
 
-
 	node* current_node;
 	do {
 		current_node = pop_queue(queue);
@@ -169,31 +193,39 @@ int solution_1(const string input) {
 				continue;
 			int new_x = current_node->x + x_directions[dir_index];
 			int new_y = current_node->y + y_directions[dir_index];
+			
 			int new_g_cost = current_node->g_cost + 1 + (dir_index != current_node->dir_index) * 1000;
 			if (map[new_y][new_x] != '#') {
 				if (node_map[new_y][new_x] == NULL
 						|| node_map[new_y][new_x]->g_cost > new_g_cost) {
-					node* new_node = malloc(sizeof(node));
+					
+					node* new_node; 
+					if (node_map[new_y][new_x] == NULL) {
+						new_node = malloc(sizeof(node));
+						all_nodes_last_index++;
+						if (all_nodes_allocated_size == all_nodes_last_index) {
+							all_nodes_allocated_size *= 2;
+							all_nodes_list = realloc(all_nodes_list, all_nodes_allocated_size * sizeof(node*));
+						}
+						all_nodes_list[all_nodes_last_index] = new_node;
+						node_map[new_y][new_x] = new_node;
+						new_node->g_cost = new_g_cost;
+						new_node->h_cost = abs(end_x - start_x) + abs(end_y - start_y);
+						add_to_queue(queue, new_node);
+					}
+					else {
+						new_node = node_map[new_y][new_x];
+						new_node->g_cost = new_g_cost;
+						queue_reevaluate_or_add(queue, new_node);
+					}
 
 					new_node->dir_index = dir_index;
 					new_node->x = new_x;
 					new_node->y = new_y;
-					new_node->g_cost = new_g_cost;
-					new_node->h_cost = abs(end_x - start_x) + abs(end_y - start_y);
-					node_map[new_y][new_x] = new_node;
-					add_to_queue(queue, new_node);
-
-					all_nodes_last_index++;
-					if (all_nodes_allocated_size == all_nodes_last_index) {
-						all_nodes_allocated_size *= 2;
-						all_nodes_list = realloc(all_nodes_list, all_nodes_allocated_size * sizeof(node*));
-					}
-					all_nodes_list[all_nodes_last_index] = new_node;
+					
 				}
 			}
 		}
-
-
 	} while (!(current_node->x == end_x && current_node->y == end_y) && !is_queue_empty(queue));
 
 	int lowest_cost = current_node->g_cost;
@@ -314,7 +346,7 @@ int solution_2(const string input) {
 			if (map[new_y][new_x] != '#') {
 				if (node_map[new_y][new_x] == NULL
 						|| node_map[new_y][new_x]->g_cost > new_g_cost) {
-					node* new_node; 
+					node* new_node;
 					if (node_map[new_y][new_x] == NULL) {
 						new_node = malloc(sizeof(node));
 						all_nodes_last_index++;
@@ -324,21 +356,23 @@ int solution_2(const string input) {
 						}
 						all_nodes_list[all_nodes_last_index] = new_node;
 						node_map[new_y][new_x] = new_node;
+						new_node->g_cost = new_g_cost;
+						new_node->h_cost = abs(end_x - start_x) + abs(end_y - start_y);
+						add_to_queue(queue, new_node);
 					}
-					else
+					else {
 						new_node = node_map[new_y][new_x];
+						new_node->g_cost = new_g_cost;
+						queue_reevaluate_or_add(queue, new_node);
+					}
 
 					new_node->dir_index = dir_index;
 					new_node->x = new_x;
 					new_node->y = new_y;
-					new_node->g_cost = new_g_cost;
-					new_node->h_cost = abs(end_x - start_x) + abs(end_y - start_y);
-					add_to_queue(queue, new_node);
+					
 				}
 			}
 		}
-	
-
 	} while (!(current_node->x == end_x && current_node->y == end_y) && !is_queue_empty(queue));
 
 	int count = count_best_paths_backwards(current_node, &start_node, node_map, map);
