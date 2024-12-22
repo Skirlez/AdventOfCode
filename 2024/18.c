@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <memory.h>
 #include "Util.h"
 
+// copied from day 16
 typedef struct {
 	int x;
 	int y;
@@ -30,6 +32,10 @@ void free_queue(priority_queue* queue) {
 	free(queue->arr);
 	free(queue);
 }
+void clear_queue(priority_queue* queue) {
+	queue->last_queue_index = -1;
+}
+
 bool is_queue_empty(priority_queue* queue) {
 	return queue->last_queue_index == -1;
 }
@@ -141,38 +147,76 @@ node* pop_queue(priority_queue* queue) {
 }
 
 
+
+
+int map_size = 71;
+int amount_to_insert = 1024;
+
+uint8_t** parse_into_map(char* str, int size, int* index_ptr, int amount) {
+	int pos = *index_ptr;
+	uint8_t** map = malloc(map_size * sizeof(uint8_t*));
+	for (int i = 0; i < map_size; i++) {
+		map[i] = calloc(map_size, sizeof(uint8_t));
+	}
+	int amount_parsed = 0;
+	while (pos < size && amount_parsed < amount) {
+		int x = 0;
+		do {
+			x = x * 10 + (str[pos] - '0');
+			pos++;
+		} while (str[pos] != ',');
+		pos++;
+		int y = 0;
+		do {
+			y = y * 10 + (str[pos] - '0');
+			pos++;
+		} while (str[pos] != '\n');
+		pos++;
+
+		map[y][x] = 1;
+		amount_parsed++;
+	}
+	/*
+	for (int i = 0; i < map_size; i++) {
+		for (int j = 0; j < map_size; j++) {
+			if (map[i][j] == 0)
+				printf(".");
+			else
+				printf("#");
+		}
+		printf("\n");
+	}
+	printf("\n");
+	*/
+	*index_ptr = pos;
+	return map;
+}
+
 int x_directions[] = {1, 0, -1, 0};
 int y_directions[] = {0, -1, 0, 1};
 int opposite_directions[] = {2, 3, 0, 1};
 
-
 int solution_1(const string input) {
 	char* str = input.content;
+
+	int zero = 0;
+	uint8_t** map = parse_into_map(str, input.size, &zero, amount_to_insert);
+	node*** node_map = malloc(map_size * sizeof(node**));
+	for (int i = 0; i < map_size; i++) {
+		node_map[i] = calloc(map_size, sizeof(node*));
+	}
+
 	int all_nodes_allocated_size = 2;
 	int all_nodes_last_index = -1;
 	node** all_nodes_list = malloc(all_nodes_allocated_size * sizeof(node*));
 
+	int start_x = 0;
+	int start_y = 0;
+
+	int end_x = map_size - 1;
+	int end_y = map_size - 1;
+
 	priority_queue* queue = create_queue();
-
-	int row_size = first_occurrence_of_char(str, '\n');
-	int column_size = input.size / (row_size + 1); // + 1 to consider the newline characters
-	
-	node*** node_map = malloc(column_size * sizeof(node**));
-
-	char** map = malloc(column_size * sizeof(char*));
-	for (int i = 0; i < column_size; i++) {
-		map[i] = malloc(row_size);
-		memcpy(map[i], &str[i * (row_size + 1)], row_size);
-		node_map[i] = calloc(row_size, sizeof(node*));
-	}
-
-	int start_pos = first_occurrence_of_char(str, 'S');
-	int start_x = start_pos % (row_size + 1);
-	int start_y = start_pos / (row_size + 1);
-
-	int end_pos = first_occurrence_of_char(str, 'E');
-	int end_x = end_pos % (row_size + 1);
-	int end_y = end_pos / (row_size + 1);
 
 	node start_node;
 	start_node.x = start_x;
@@ -183,21 +227,20 @@ int solution_1(const string input) {
 	node_map[start_y][start_x] = &start_node;
 
 	add_to_queue(queue, node_map[start_y][start_x]);
-
 	node* current_node;
 	do {
 		current_node = pop_queue(queue);
 		for (int dir_index = 0; dir_index < 4; dir_index++) {
-			if (current_node->dir_index == opposite_directions[dir_index])
-				continue;
 			int new_x = current_node->x + x_directions[dir_index];
 			int new_y = current_node->y + y_directions[dir_index];
-			
-			int new_g_cost = current_node->g_cost + 1 + (dir_index != current_node->dir_index) * 1000;
-			if (map[new_y][new_x] != '#') {
+			if (current_node->dir_index == opposite_directions[dir_index]
+					|| (new_y < 0 || new_x < 0 || new_x >= map_size || new_y >= map_size)) {
+				continue;
+			}
+			int new_g_cost = current_node->g_cost + 1;
+			if (map[new_y][new_x] != 1) {
 				if (node_map[new_y][new_x] == NULL
 						|| node_map[new_y][new_x]->g_cost > new_g_cost) {
-					
 					node* new_node; 
 					if (node_map[new_y][new_x] == NULL) {
 						new_node = malloc(sizeof(node));
@@ -221,7 +264,6 @@ int solution_1(const string input) {
 					new_node->dir_index = dir_index;
 					new_node->x = new_x;
 					new_node->y = new_y;
-					
 				}
 			}
 		}
@@ -232,7 +274,7 @@ int solution_1(const string input) {
 	for (int i = 0; i <= all_nodes_last_index; i++) {
 		free(all_nodes_list[i]);
 	}
-	for (int i = 0; i < column_size; i++) {
+	for (int i = 0; i < map_size; i++) {
 		free(map[i]);
 		free(node_map[i]);
 	}
@@ -241,86 +283,55 @@ int solution_1(const string input) {
 	return lowest_cost;
 }
 
-int count_best_paths_backwards(node* current_node, node* start, node*** node_map,  char** map) {
-	if (current_node == start) {
-		map[current_node->y][current_node->x] = 'O';
-		return 1;
-	}
-	map[current_node->y][current_node->x] = 'O';
-	int sum = 1;
-	for (int dir_index = 0; dir_index < 4; dir_index++) {
-		int new_x = current_node->x + x_directions[dir_index];
-		int new_y = current_node->y + y_directions[dir_index];
-		node* new_node = node_map[new_y][new_x];
-		if (new_node == NULL)
-			continue;
-		if (map[new_y][new_x] == 'O')
-			continue;
-
-		int g_cost = current_node->g_cost;
-		if (new_node->g_cost + 1 == g_cost) {
-			sum += count_best_paths_backwards(new_node, start, node_map, map);
-			continue;
-		}
-		if (new_node->g_cost + 1 + (new_node->dir_index % 2 != dir_index % 2) * 1000 == g_cost) {
-			sum += count_best_paths_backwards(new_node, start, node_map, map);
-
-			// Consider the following situation. current_node is where the arrow is.
-			// OOO <-
-			//  O
-			
-
-			// Two best paths join together in the center O. We are coming from the left.
-			// The center O has a score -1001 of our own. The O to the left has a score -2 of our own.
-			// Once we get to the center O, it will ignore the O to the left, since there isn't a turn between them,
-			// and they have mismatching scores. So we're checking if such an O exists right here.
-
-			int new_x_2 = new_x + x_directions[dir_index];
-			int new_y_2 = new_y + y_directions[dir_index];
-			node* new_node_2 = node_map[new_y_2][new_x_2];
-			if (new_node_2 == NULL)
-				continue;
-			if (map[new_y_2][new_x_2] == 'O')
-				continue;
-			if (new_node_2->g_cost + 2 != g_cost) {
-				continue;
-			}
-			sum += count_best_paths_backwards(new_node_2, start, node_map, map);
-		}
+typedef struct {
+	uint32_t x;
+	uint32_t y;
+} part2_answer;
 
 
+part2_answer parse_one_more_into_map(char* str, int size, uint8_t** map, int* index_ptr) {
+	int pos = *index_ptr;
+	int x = 0;
+	do {
+		x = x * 10 + (str[pos] - '0');
+		pos++;
+	} while (str[pos] != ',');
+	pos++;
+	int y = 0;
+	do {
+		y = y * 10 + (str[pos] - '0');
+		pos++;
+	} while (str[pos] != '\n');
+	pos++;
 
-	}
-	return sum;
-}
+	map[y][x] = 1;
+	*index_ptr = pos;
+	part2_answer possible_answer = {x, y};
+	return possible_answer;
+} 
 
-int solution_2(const string input) {
+
+part2_answer solution_2(const string input) {
 	char* str = input.content;
+
+	int pos = 0;
+	uint8_t** map = parse_into_map(str, input.size, &pos, amount_to_insert);
+	node*** node_map = malloc(map_size * sizeof(node**));
+	for (int i = 0; i < map_size; i++) {
+		node_map[i] = calloc(map_size, sizeof(node*));
+	}
+
 	int all_nodes_allocated_size = 2;
 	int all_nodes_last_index = -1;
 	node** all_nodes_list = malloc(all_nodes_allocated_size * sizeof(node*));
 
+	int start_x = 0;
+	int start_y = 0;
+
+	int end_x = map_size - 1;
+	int end_y = map_size - 1;
+
 	priority_queue* queue = create_queue();
-
-	int row_size = first_occurrence_of_char(str, '\n');
-	int column_size = input.size / (row_size + 1); // + 1 to consider the newline characters
-	
-	node*** node_map = malloc(column_size * sizeof(node**));
-
-	char** map = malloc(column_size * sizeof(char*));
-	for (int i = 0; i < column_size; i++) {
-		map[i] = malloc(row_size);
-		memcpy(map[i], &str[i * (row_size + 1)], row_size);
-		node_map[i] = calloc(row_size, sizeof(node*));
-	}
-
-	int start_pos = first_occurrence_of_char(str, 'S');
-	int start_x = start_pos % (row_size + 1);
-	int start_y = start_pos / (row_size + 1);
-
-	int end_pos = first_occurrence_of_char(str, 'E');
-	int end_x = end_pos % (row_size + 1);
-	int end_y = end_pos / (row_size + 1);
 
 	node start_node;
 	start_node.x = start_x;
@@ -330,73 +341,114 @@ int solution_2(const string input) {
 	start_node.h_cost = abs(end_x - start_x) + abs(end_y - start_y);
 	node_map[start_y][start_x] = &start_node;
 
+	part2_answer answer;
+
 	add_to_queue(queue, node_map[start_y][start_x]);
-	
 	node* current_node;
 	do {
-		current_node = pop_queue(queue);
-		for (int dir_index = 0; dir_index < 4; dir_index++) {
-			if (current_node->dir_index == opposite_directions[dir_index])
-				continue;
-			int new_x = current_node->x + x_directions[dir_index];
-			int new_y = current_node->y + y_directions[dir_index];
-			
-			int new_g_cost = current_node->g_cost + 1 + (dir_index != current_node->dir_index) * 1000;
-			if (map[new_y][new_x] != '#') {
-				if (node_map[new_y][new_x] == NULL
-						|| node_map[new_y][new_x]->g_cost > new_g_cost) {
-					node* new_node;
-					if (node_map[new_y][new_x] == NULL) {
-						new_node = malloc(sizeof(node));
-						all_nodes_last_index++;
-						if (all_nodes_allocated_size == all_nodes_last_index) {
-							all_nodes_allocated_size *= 2;
-							all_nodes_list = realloc(all_nodes_list, all_nodes_allocated_size * sizeof(node*));
+		do {
+			current_node = pop_queue(queue);
+			for (int dir_index = 0; dir_index < 4; dir_index++) {
+				int new_x = current_node->x + x_directions[dir_index];
+				int new_y = current_node->y + y_directions[dir_index];
+				if (current_node->dir_index == opposite_directions[dir_index]
+						|| (new_y < 0 || new_x < 0 || new_x >= map_size || new_y >= map_size)) {
+					continue;
+				}
+				int new_g_cost = current_node->g_cost + 1;
+				if (map[new_y][new_x] != 1) {
+					if (node_map[new_y][new_x] == NULL
+							|| node_map[new_y][new_x]->g_cost > new_g_cost) {
+						node* new_node; 
+						if (node_map[new_y][new_x] == NULL) {
+							new_node = malloc(sizeof(node));
+							all_nodes_last_index++;
+							if (all_nodes_allocated_size == all_nodes_last_index) {
+								all_nodes_allocated_size *= 2;
+								all_nodes_list = realloc(all_nodes_list, all_nodes_allocated_size * sizeof(node*));
+							}
+							all_nodes_list[all_nodes_last_index] = new_node;
+							node_map[new_y][new_x] = new_node;
+							new_node->g_cost = new_g_cost;
+							new_node->h_cost = abs(end_x - start_x) + abs(end_y - start_y);
+							add_to_queue(queue, new_node);
 						}
-						all_nodes_list[all_nodes_last_index] = new_node;
-						node_map[new_y][new_x] = new_node;
-						new_node->g_cost = new_g_cost;
-						new_node->h_cost = abs(end_x - start_x) + abs(end_y - start_y);
-						add_to_queue(queue, new_node);
-					}
-					else {
-						new_node = node_map[new_y][new_x];
-						new_node->g_cost = new_g_cost;
-						queue_reevaluate_or_add(queue, new_node);
-					}
+						else {
+							new_node = node_map[new_y][new_x];
+							new_node->g_cost = new_g_cost;
+							queue_reevaluate_or_add(queue, new_node);
+						}
 
-					new_node->dir_index = dir_index;
-					new_node->x = new_x;
-					new_node->y = new_y;
-					
+						new_node->dir_index = dir_index;
+						new_node->x = new_x;
+						new_node->y = new_y;
+					}
 				}
 			}
-		}
-	} while (!(current_node->x == end_x && current_node->y == end_y) && !is_queue_empty(queue));
+		} while (!(current_node->x == end_x && current_node->y == end_y) && !is_queue_empty(queue));
 
-	int count = count_best_paths_backwards(current_node, &start_node, node_map, map);
+		bool reached_end = current_node->x == end_x && current_node->y == end_y;
+		if (reached_end) {
+			do {
+				answer = parse_one_more_into_map(str, input.size, map, &pos);
+			} while (node_map[answer.y][answer.x] == NULL);
+			
+			int max_g_cost = node_map[answer.y][answer.x]->g_cost;
+
+			int new_all_nodes_last_index = -1;
+			node** new_all_nodes_list = malloc(all_nodes_allocated_size * sizeof(node*));
+
+			clear_queue(queue);
+
+			for (int i = 0; i <= all_nodes_last_index; i++) {
+				node* n = all_nodes_list[i];
+				if (n->g_cost >= max_g_cost) {
+					node_map[n->y][n->x] = NULL;
+					free(n);
+				}
+				else {
+					new_all_nodes_last_index++;
+					new_all_nodes_list[new_all_nodes_last_index] = n;
+					add_to_queue(queue, n);
+				}
+			}
+			free(all_nodes_list);
+
+			all_nodes_list = new_all_nodes_list;
+			all_nodes_last_index = new_all_nodes_last_index;
+
+			node_map[start_y][start_x] = &start_node;
+			add_to_queue(queue, node_map[start_y][start_x]);
+		}
+		else
+			break;
+	} while (1);
+
+	
 	
 	for (int i = 0; i <= all_nodes_last_index; i++) {
 		free(all_nodes_list[i]);
 	}
-	for (int i = 0; i < column_size; i++) {
+	for (int i = 0; i < map_size; i++) {
 		free(map[i]);
 		free(node_map[i]);
 	}
 	free(map);
 	free(node_map);
-	return count;
+	return answer;
 }
 
 int main(int argc, char* argv[]) {
 	init_timing();
-	const string input = read_input(16, argv);
+	const string input = read_input(18, argv);
 	
 	printf("Part 1: %d\n", solution_1(input));
-	time_function_and_print(solution_1, input, 5000);
+	time_function_and_print(solution_1, input, 10000);
 
-	printf("Part 2: %d\n", solution_2(input));
-	time_function_and_print(solution_2, input, 5000);
+	part2_answer ans = solution_2(input);
+
+	printf("Part 2: %d,%d\n", ans.x, ans.y);
+	time_function_and_print((SolutionFunction)solution_2, input, 2);
 
 	free(input.content);
 	return 0;
